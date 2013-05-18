@@ -145,16 +145,16 @@ void createScratch()
   *(frame + 1) = 0;                            /* Point column */
   *(frame + 2) = 0;                            /* Mark line */
   *(frame + 3) = 0;                            /* Mark column */
-  *(frame + 4) = 0;                            /* First line */
+  *(frame + 4) = 0;                            /* First visible line */
   *(frame + 5) = (void*)1;                     /* Number of lines */
   *(frame + 6) = 0;                            /* Filename */
   *(frame + 7) = 0;                            /* Message */
   *(frame + 8) = (void*)malloc(sizeof(char*)); /* Buffer */
   
   /* Create one empty line */
-  *(char**)*(frame + 8) = (char*)malloc(9 * sizeof(char)); /* line:* prepared:8 */
+  char* line0 = *(char**)*(frame + 8) = (char*)malloc(9 * sizeof(char)); /* line:* prepared:8 */
   for (int i = 0; i < 9; i++)
-    *(*(char**)*(frame + 8) + i) = 0;
+    *(line0 + i) = 0;
 }
 
 
