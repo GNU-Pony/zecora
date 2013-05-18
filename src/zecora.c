@@ -78,7 +78,7 @@ int main(int argc, char** argv)
   fflush(stdout);
   
   /* Create an empty buffer not yet associeted with a file */
-  createScretch();
+  createScratch();
   
   /* Load files and apply jumps from the command line */
   int fileLoaded = 0;
@@ -112,7 +112,7 @@ int main(int argc, char** argv)
 }
 
 
-void createScretch()
+void createScratch()
 {
   /**/
 }
