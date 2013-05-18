@@ -55,6 +55,9 @@ int main(int argc, char** argv)
   /* Apply the previous instruction */
   fflush(stdout);
   
+  /* Create an empty buffer not yet associeted with a file */
+  createScretch();
+  
   /* Load files and apply jumps from the command line */
   int fileLoaded = 0;
   for (int i = 1; i < argc; i++)
@@ -86,6 +89,11 @@ int main(int argc, char** argv)
   return 0;
 }
 
+
+void createScretch()
+{
+  /**/
+}
 
 int openFile(char* filename)
 {
