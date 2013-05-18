@@ -49,7 +49,7 @@ int main(int argc, char** argv)
   stty.c_lflag &= ~(ICANON | ECHO | ISIG);
   tcsetattr(STDIN_FILENO, TCSAFLUSH, &stty);
   
-  printf("\033[?1048h"   /* Initialise subterminal, if using an xterm */
+  printf("\033[?1049h"   /* Initialise subterminal, if using an xterm */
 	 "\033[H\033[2J" /* Clear the terminal, subterminal, if initialised is already clean */
 	 "\033[?8c");    /* Switch to block cursor, if using TTY */
   /* Apply the previous instruction */
@@ -76,7 +76,7 @@ int main(int argc, char** argv)
   
   printf("\033[?2c"      /* Restore cursor to underline, if using TTY */
 	 "\033[H\033[2J" /* Clear the terminal, useless if in subterminal and not TTY */
-	 "\033[?1048l"); /* Terminate subterminal, if using an xterm */
+	 "\033[?1049l"); /* Terminate subterminal, if using an xterm */
   /* Apply the previous instruction */
   fflush(stdout);
   /* Return the terminal to its previous state */
