@@ -26,5 +26,5 @@
 
 
 int openFile(char* filename);
-int jump(char* command);
+void jump(char* command);
 
