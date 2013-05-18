@@ -104,6 +104,6 @@ void createScreen(int rows, int cols)
 
 void readInput(int cols)
 {
-  /**/
+  getchar();
 }
 
