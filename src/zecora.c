@@ -34,6 +34,13 @@ int main(int argc, char** argv)
   int rows = win.ws_row;
   int cols = win.ws_col;
   
+  /* Check the size of the terminal */
+  if ((rows < 10) || (cols < 20))
+    {
+      printf("You will need at least in 10 rows by 20 columns terminal!");
+      return 1;
+    }
+  
   /* Disable signals from keystrokes, keystroke echoing and keystroke buffering */
   struct termios saved_stty;
   struct termios stty;
@@ -41,13 +48,11 @@ int main(int argc, char** argv)
   tcgetattr(STDIN_FILENO, &stty);
   stty.c_lflag &= ~(ICANON | ECHO | ISIG);
   tcsetattr(STDIN_FILENO, TCSAFLUSH, &stty);
-  /* Initialise subterminal, if using an xterm */
-  printf("\033[?1048h");
-  /* Clear the terminal, subterminal, if initialised is already clean */
-  printf("\033[H\033[2J");
-  /* Switch to block cursor, if using TTY */
-  printf("\033[?8c");
-  /* Apply the three previous instructions */
+  
+  printf("\033[?1048h"   /* Initialise subterminal, if using an xterm */
+	 "\033[H\033[2J" /* Clear the terminal, subterminal, if initialised is already clean */
+	 "\033[?8c");    /* Switch to block cursor, if using TTY */
+  /* Apply the previous instruction */
   fflush(stdout);
   
   /* Load files and apply jumps from the command line */
@@ -63,13 +68,16 @@ int main(int argc, char** argv)
 	fileLoaded = 0;
       }
   
-  /* Restore cursor to underline, if using TTY */
-  printf("\033[?2c");
-  /* Clear the terminal, useless if in subterminal and not TTY */
-  printf("\033[H\033[2J");
-  /* Terminate subterminal, if using an xterm */
-  printf("\033[?1048l");
-  /* Apply the three previous instructions */
+  /* Create the screen and start display the files */
+  createScreen(rows, cols);
+  /* Start interaction */
+  readInput(cols);
+  
+  
+  printf("\033[?2c"      /* Restore cursor to underline, if using TTY */
+	 "\033[H\033[2J" /* Clear the terminal, useless if in subterminal and not TTY */
+	 "\033[?1048l"); /* Terminate subterminal, if using an xterm */
+  /* Apply the previous instruction */
   fflush(stdout);
   /* Return the terminal to its previous state */
   tcsetattr(STDIN_FILENO, TCSAFLUSH, &saved_stty);
@@ -85,6 +93,16 @@ int openFile(char* filename)
 }
 
 void jump(char* command)
+{
+  /**/
+}
+
+void createScreen(int rows, int cols)
+{
+  /**/
+}
+
+void readInput(int cols)
 {
   /**/
 }
