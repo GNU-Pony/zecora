@@ -7,4 +7,5 @@ bin/
 *.swo
 *.swp
 *.gch
+*.o
 
