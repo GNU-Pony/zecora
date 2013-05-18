@@ -25,7 +25,7 @@
 #include <stropts.h>
 
 
-void createScretch();
+void createScratch();
 int openFile(char* filename);
 void jump(char* command);
 void createScreen(int rows, int cols);
