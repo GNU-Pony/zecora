@@ -118,15 +118,19 @@ void prepareFrameBuffer()
 {
   if (frames == 0)
   {
+    /* Prepare to hold 4 frames initially */
     preparedFrames = 4;
     frames = (void**)malloc(preparedFrames * sizeof(void*));
   }
   else if (openFrames == preparedFrames)
   {
+    /* When full, prepare to hold twice as much */
     preparedFrames <<= 1;
     void** newFrames = (void**)malloc(preparedFrames * sizeof(void*));
+    /* Copy old buffer to new buffer */
     for (int i = 0; i < openFrames; i++)
       *(newFrames + i) = *(frames + i);
+    /* Free old buffer and apply new buffer */
     free(frames);
     frames = newFrames;
   }
@@ -138,7 +142,10 @@ void prepareFrameBuffer()
  */
 void createScratch()
 {
+  /* Ensure that another frame can be held */
   prepareFrameBuffer();
+  
+  /* Create new frame */
   currentFrame = openFrames++;
   void** frame = (void**)(*(frames + currentFrame) = (void*)malloc(8 * sizeof(void*)));
   *(frame + 0) = 0;                            /* Point line */
