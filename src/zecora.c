@@ -25,14 +25,14 @@
 static long openFrames = 0;
 
 /**
- * The index of the frame on the left/top part of the/entire terminal
+ * The number of frames the fits in `frames`
  */
-static long masterFrame = -1;
+static long preparedFrames = 0;
 
 /**
- * The index of the frame on the right/bottom part of the terminal
+ * The index of the current frame
  */
-static long slaveFrame = -1;
+static long currentFrame = -1;
 
 /**
  * The opened frames
@@ -98,7 +98,6 @@ int main(int argc, char** argv)
   /* Start interaction */
   readInput(cols);
   
-  
   printf("\033[?2c"      /* Restore cursor to underline, if using TTY */
 	 "\033[H\033[2J" /* Clear the terminal, useless if in subterminal and not TTY */
 	 "\033[?1049l"); /* Terminate subterminal, if using an xterm */
@@ -112,10 +111,51 @@ int main(int argc, char** argv)
 }
 
 
+/**
+ * Prepare the frame buffer to hold one more frame
+ */
+void prepareFrameBuffer()
+{
+  if (frames == 0)
+  {
+    preparedFrames = 4;
+    frames = (void**)malloc(preparedFrames * sizeof(void*));
+  }
+  else if (openFrames == preparedFrames)
+  {
+    preparedFrames <<= 1;
+    void** newFrames = (void**)malloc(preparedFrames * sizeof(void*));
+    for (int i = 0; i < openFrames; i++)
+      *(newFrames + i) = *(frames + i);
+    free(frames);
+    frames = newFrames;
+  }
+}
+
+
+/**
+ * Create an empty document that is not yet associated with a file
+ */
 void createScratch()
 {
-  /**/
+  prepareFrameBuffer();
+  currentFrame = openFrames++;
+  void** frame = (void**)(*(frames + currentFrame) = (void*)malloc(8 * sizeof(void*)));
+  *(frame + 0) = 0;                            /* Point line */
+  *(frame + 1) = 0;                            /* Point column */
+  *(frame + 2) = 0;                            /* Mark line */
+  *(frame + 3) = 0;                            /* Mark column */
+  *(frame + 4) = (void*)1;                     /* Number of lines */
+  *(frame + 5) = 0;                            /* Filename */
+  *(frame + 6) = 0;                            /* Message */
+  *(frame + 7) = (void*)malloc(sizeof(char*)); /* Buffer */
+  
+  /* Create one empty line */
+  *(char**)*(frame + 7) = (char*)malloc(9 * sizeof(char)); /* line:* prepared:8 */
+  for (int i = 0; i < 9; i++)
+    *(*(char**)*(frame + 7) + i) = 0;
 }
+
 
 int openFile(char* filename)
 {

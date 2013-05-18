@@ -25,6 +25,7 @@
 #include <stropts.h>
 
 
+void prepareFrameBuffer();
 void createScratch();
 int openFile(char* filename);
 void jump(char* command);
