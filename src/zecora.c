@@ -20,6 +20,28 @@
 
 
 /**
+ * The number of opened frames
+ */
+static long openFrames = 0;
+
+/**
+ * The index of the frame on the left/top part of the/entire terminal
+ */
+static long masterFrame = -1;
+
+/**
+ * The index of the frame on the right/bottom part of the terminal
+ */
+static long slaveFrame = -1;
+
+/**
+ * The opened frames
+ */
+static void** frames = 0;
+
+
+
+/**
  * This is the mane entry point of Zecora
  * 
  * @param   argc  The number of elements in `argv`
