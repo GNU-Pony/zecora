@@ -193,6 +193,11 @@ void createScratch()
  */
 long openFile(char* filename)
 {
+  /* Return the ~index of the frame holding the file if it already exists */
+  long found = findFile(filename);
+  if (found >= 0)
+    return ~found;
+  
   /* Verify that the file is a regular file or does not exist but can be created */
   int fileExists = 1;
   struct stat fileStats;
@@ -326,6 +331,40 @@ long openFile(char* filename)
   
   /* Report that a new frame as been created */
   return 0;
+}
+
+
+/**
+ * Find the frame that contains a specific file
+ * 
+ * @param   filename  The name of the file
+ * @return  >=0       The index of the frame
+ * @return  -1        No frame contains the file
+ */
+long findFile(char* filename)
+{
+  for (int i = 0; i < openFrames; i++)
+    {
+      char** frame = (char**)*(frames + i);
+      char* framefile = *(frame + 7);
+      if (framefile)
+	{
+	  /* Check of the frames file matches the wanted file */
+	  char* f = filename;
+	  while ((*framefile && *f) && (*framefile == *f))
+	    {
+	      framefile++;
+	      f++;
+	    }
+	  
+	  /* Report index of frame if it was match */
+	  if ((*framefile | *f) == 0)
+	    return i;
+	}
+    }
+  
+  /* No frame contains the file */
+  return -1;
 }
 
 
