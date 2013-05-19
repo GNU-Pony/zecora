@@ -154,16 +154,17 @@ void createScratch()
   /* Create new frame */
   currentFrame = openFrames++;
   void** frame = (void**)(*(frames + currentFrame) = (void*)malloc(8 * sizeof(void*)));
-  *(frame + 0) = 0;                            /* Point line           */
-  *(frame + 1) = 0;                            /* Point column         */
-  *(frame + 2) = 0;                            /* Mark line            */
-  *(frame + 3) = 0;                            /* Mark column          */
-  *(frame + 4) = 0;                            /* First visible line   */
-  *(frame + 5) = 0;                            /* First visible column */
-  *(frame + 6) = (void*)1;                     /* Number of lines      */
-  *(frame + 7) = 0;                            /* Filename             */
-  *(frame + 8) = 0;                            /* Message              */
-  *(frame + 9) = (void*)malloc(sizeof(char*)); /* Buffer               */
+  *(frame +  0) = 0;                            /* Point line           */
+  *(frame +  1) = 0;                            /* Point column         */
+  *(frame +  2) = 0;                            /* Mark line            */
+  *(frame +  3) = 0;                            /* Mark column          */
+  *(frame +  4) = 0;                            /* First visible line   */
+  *(frame +  5) = 0;                            /* First visible column */
+  *(frame +  6) = (void*)1;                     /* Number of lines      */
+  *(frame +  7) = 0;                            /* Filename             */
+  *(frame +  8) = 0;                            /* Message              */
+  *(frame +  9) = (void*)malloc(sizeof(char*)); /* Buffer               */
+  *(frame + 10) = 0;                            /* Flags                */
   
   /* Create one empty line */
   char* line0 = *(char**)*(frame + 2 * P) = (char*)malloc(2 * P * sizeof(char)); /* used:P, allocated:P, line:* */
@@ -281,16 +282,17 @@ long openFile(char* filename)
   /* Create new frame */
   currentFrame = openFrames++;
   void** frame = (void**)(*(frames + currentFrame) = (void*)malloc(8 * sizeof(void*)));
-  *(frame + 0) = 0;                                    /* Point line           */
-  *(frame + 1) = 0;                                    /* Point column         */
-  *(frame + 2) = 0;                                    /* Mark line            */
-  *(frame + 3) = 0;                                    /* Mark column          */
-  *(frame + 4) = 0;                                    /* First visible line   */
-  *(frame + 5) = 0;                                    /* First visible column */
-  *(frame + 6) = (void*)lines;                         /* Number of lines      */
-  *(frame + 7) = _filename;                            /* Filename             */
-  *(frame + 8) = 0;                                    /* Message              */
-  *(frame + 9) = (void*)malloc(lines * sizeof(char*)); /* Buffer               */
+  *(frame +  0) = 0;                                    /* Point line           */
+  *(frame +  1) = 0;                                    /* Point column         */
+  *(frame +  2) = 0;                                    /* Mark line            */
+  *(frame +  3) = 0;                                    /* Mark column          */
+  *(frame +  4) = 0;                                    /* First visible line   */
+  *(frame +  5) = 0;                                    /* First visible column */
+  *(frame +  6) = (void*)lines;                         /* Number of lines      */
+  *(frame +  7) = _filename;                            /* Filename             */
+  *(frame +  8) = 0;                                    /* Message              */
+  *(frame +  9) = (void*)malloc(lines * sizeof(char*)); /* Buffer               */
+  *(frame + 10) = 0;                                    /* Flags                */
   
   if ((buffer))
     {
