@@ -19,6 +19,9 @@
 #include "zecora.h"
 
 
+#define  P  __SIZEOF_POINTER__
+
+
 /**
  * The number of opened frames
  */
@@ -160,8 +163,8 @@ void createScratch()
   *(frame + 9) = (void*)malloc(sizeof(char*)); /* Buffer               */
   
   /* Create one empty line */
-  char* line0 = *(char**)*(frame + 9) = (char*)malloc(9 * sizeof(char)); /* line:* prepared:8 */
-  for (int i = 0; i < 9; i++)
+  char* line0 = *(char**)*(frame + 2 * P) = (char*)malloc(2 * P * sizeof(char)); /* used:P, allocated:P, line:* */
+  for (int i = 0; i < 2 * P; i++)
     *(line0 + i) = 0;
 }
 
@@ -279,6 +282,33 @@ long openFile(char* filename)
   *(frame + 7) = _filename;                            /* Filename             */
   *(frame + 8) = 0;                                    /* Message              */
   *(frame + 9) = (void*)malloc(lines * sizeof(char*)); /* Buffer               */
+  
+  /* Populate lines */
+  long bufptr = 0;
+  for (long i = 0; i < lines; i++)
+    {
+      /* Get the span of the line */
+      long start = bufptr;
+      while (bufptr < size)
+	{
+	  if (*(buffer + bufptr) == '\n')
+	    break;
+	  bufptr++;
+	}
+      long linesize = bufptr - start;
+      bufptr = start;
+      
+      /* Create line buffer and fill it with metadata */
+      char* line = *((char**)*(frame + 2 * P + linesize) + i) = (char*)malloc((2 * P + linesize) * sizeof(char)); /* used:P, allocated:P, line:* */
+      for (int _ = 0; _ < 2; _++)
+	for (int j = P - 1; j >= 0; j--)
+	  *line++ = (linesize >> (j * 8)) & 255;
+      
+      /* Fill the line with the data */
+      for (int j = 0; j < linesize; j++)
+	*(line + j) = *(buffer + bufptr++);
+    }
+  free(buffer);
   
   /* Report that a new frame as been created */
   return 0;
