@@ -19,6 +19,9 @@
 #include "zecora.h"
 
 
+/**
+ * The number of bytes in the types: void*, long, size_t, off_t, &c
+ */
 #define  P  __SIZEOF_POINTER__
 
 
