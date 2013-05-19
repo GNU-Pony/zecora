@@ -182,10 +182,12 @@ void createScratch()
  * @throws  ENOTDIR       A component of the path prefix of path is not a directory
  * @throws  EOVERFLOW     The file size, inode number, or number of block is too large for the system
  * @throws  256           The file is not a regular file
+ * @throws  257           Failed to read file
  */
-int openFile(char* filename)
+long openFile(char* filename)
 {
   /* Verify that the file is a regular file or does not exist but can be created */
+  int fileExists = 1;
   struct stat fileStats;
   if (stat(filename, &fileStats))
     {
@@ -204,7 +206,7 @@ int openFile(char* filename)
 	  *(dirname + namesize) = 0;
 	  if (!stat(dirname, &fileStats))
 	    if (S_ISDIR(fileStats.st_mode))
-	      error = 0;
+	      error = fileExists = 0;
 	  free(dirname);
 	}
       if (error != 0)
@@ -213,6 +215,40 @@ int openFile(char* filename)
   else if (S_ISREG(fileStats.st_mode))
     return 256;
   
+  /* Get the optimal reading block size */
+  size_t blockSize = fileExists ? (size_t)(fileStats.st_blksize) : 0;
+  /* Get the size of the file */
+  unsigned long size = 0;
+  /* Buffer for the content file */
+  char* buffer = fileExists ? (char*)malloc(fileStats.st_size) : 0;
+  
+  /* Read file */
+  size_t got;
+  FILE* file = fileExists ? fopen(filename, "r") : 0;
+  if (fileExists)
+    {
+      for (;;)
+	if ((got = fread(buffer, 1, blockSize, file)) != blockSize)
+	  {
+	    if (feof(file))
+	      {
+		/* End of file */
+		size += got;
+		clearerr(file);
+		break;
+	      }
+	    /* Failed to read the file */
+	    free(buffer);
+	    clearerr(file);
+	    fclose(file);
+	    return 257;
+	  }
+	else
+	  size += got;
+      fclose(file);
+    }
+  
+  /* Report that a new frame as been created */
   return 0;
 }
 
