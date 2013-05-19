@@ -257,9 +257,10 @@ long openFile(char* filename)
   
   /* Count the number of lines */
   long lines = 1;
-  for (long i = 0; *(buffer + i); i++)
-    if (*(buffer + i) == '\n')
-      lines++;
+  if ((buffer))
+    for (long i = 0; *(buffer + i); i++)
+      if (*(buffer + i) == '\n')
+	lines++;
   
   /* Copy filename so it later can be freed */
   long namesize = 0;
@@ -286,32 +287,42 @@ long openFile(char* filename)
   *(frame + 8) = 0;                                    /* Message              */
   *(frame + 9) = (void*)malloc(lines * sizeof(char*)); /* Buffer               */
   
-  /* Populate lines */
-  long bufptr = 0;
-  for (long i = 0; i < lines; i++)
+  if ((buffer))
     {
-      /* Get the span of the line */
-      long start = bufptr;
-      while (bufptr < size)
+      /* Populate lines */
+      long bufptr = 0;
+      for (long i = 0; i < lines; i++)
 	{
-	  if (*(buffer + bufptr) == '\n')
-	    break;
-	  bufptr++;
+	  /* Get the span of the line */
+	  long start = bufptr;
+	  while (bufptr < size)
+	    {
+	      if (*(buffer + bufptr) == '\n')
+		break;
+	      bufptr++;
+	    }
+	  long linesize = bufptr - start;
+	  bufptr = start;
+	  
+	  /* Create line buffer and fill it with metadata */
+	  char* line = *((char**)*(frame + 2 * P + linesize) + i) = (char*)malloc((2 * P + linesize) * sizeof(char)); /* used:P, allocated:P, line:* */
+	  for (int _ = 0; _ < 2; _++)
+	    for (int j = P - 1; j >= 0; j--)
+	      *line++ = (linesize >> (j * 8)) & 255;
+	  
+	  /* Fill the line with the data */
+	  for (int j = 0; j < linesize; j++)
+	    *(line + j) = *(buffer + bufptr++);
 	}
-      long linesize = bufptr - start;
-      bufptr = start;
-      
-      /* Create line buffer and fill it with metadata */
-      char* line = *((char**)*(frame + 2 * P + linesize) + i) = (char*)malloc((2 * P + linesize) * sizeof(char)); /* used:P, allocated:P, line:* */
-      for (int _ = 0; _ < 2; _++)
-	for (int j = P - 1; j >= 0; j--)
-	  *line++ = (linesize >> (j * 8)) & 255;
-      
-      /* Fill the line with the data */
-      for (int j = 0; j < linesize; j++)
-	*(line + j) = *(buffer + bufptr++);
+      free(buffer);
     }
-  free(buffer);
+  else
+    {
+      /* No file was actually openned create an empty document */
+      char* line0 = *(char**)*(frame + 2 * P) = (char*)malloc(2 * P * sizeof(char)); /* used:P, allocated:P, line:* */
+      for (int i = 0; i < 2 * P; i++)
+	*(line0 + i) = 0;
+    }
   
   /* Report that a new frame as been created */
   return 0;
