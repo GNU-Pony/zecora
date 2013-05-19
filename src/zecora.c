@@ -89,10 +89,56 @@ int main(int argc, char** argv)
 }
 
 
+/**
+ * Make a jump in the current frame
+ * 
+ * @param  command  The jump command, in the format `[%row][:%column]`
+ */
 void jump(char* command)
 {
-  /**/
+  int has = 0, state = 1;
+  long row = 0, col = 0;
+  
+  /* Parse command */
+  char c;
+  while ((c = *command++))
+    if (('0' <= c) && (c <= '9'))
+      {
+	has |= state;
+	if (state == 1)
+	  row = row * 10 - (c & 15);
+	else
+	  col = col * 10 - (c & 15);
+      }
+    else if (c == ':')
+      {
+	if ((++state == 3))
+	  break;
+      }
+    else
+      {
+	state = 3;
+	break;
+      }
+  
+  if (state == 3)
+    {
+      /* Invalid format */
+      char* msg = (char*)malloc(28 * sizeof(char*));
+      char* _msg = "\033[31mInvalid jump format\033[m";
+      alert(msg);
+      while ((*msg++ = *_msg++))
+	;
+    }
+  else
+    {
+      /* Apply jump */
+      row = (has & 1) ? -row : -1;
+      col = (has & 2) ? -col : -1;
+      applyJump(row, col);
+    }
 }
+
 
 void createScreen(int rows, int cols)
 {

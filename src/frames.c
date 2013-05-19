@@ -299,3 +299,37 @@ long findFile(char* filename)
   return -1;
 }
 
+
+/**
+ * Adds an alert to the current frame
+ * 
+ * @param  message  The message
+ */
+void alert(char* message)
+{
+  char** frame = (char**)*(frames + currentFrame);
+  char* current = *(frame + 8);
+  if (current)
+    free(current);
+  *(frame + 8) = message;
+}
+
+
+/**
+ * Makes a jump in the current frame
+ * 
+ * @param  row  The line to jump to, negative to keep the current
+ * @parma  col  The column to jump to, negative to keep the current position if row is unchanged and beginning otherwise
+ */
+void applyJump(long row, long col)
+{
+  long* frame = (long*)*(frames + currentFrame);
+  if (row >= *(frame + 6))
+    row = *(frame + 6) - 1;
+  char* line = *((char**)*(frame + 9) + (*frame = row));
+  long end = 0;
+  for (int i = 0; i < P; i++)
+    end = (end << 8) | (*(line + i) & 255);
+  *(frame + 1) = col <= end ? col : end;
+}
+

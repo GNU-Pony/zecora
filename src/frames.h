@@ -66,3 +66,20 @@ long openFile(char* filename);
  */
 long findFile(char* filename);
 
+
+/**
+ * Adds an alert to the current frame
+ * 
+ * @param  message  The message
+ */
+void alert(char* message);
+
+
+/**
+ * Makes a jump in the current frame
+ * 
+ * @param  row  The line to jump to, negative to keep the current
+ * @parma  col  The column to jump to, negative to keep the current position if row is unchanged and beginning otherwise
+ */
+void applyJump(long row, long col);
+
