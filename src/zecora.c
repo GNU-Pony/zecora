@@ -142,9 +142,44 @@ void jump(char* command)
 
 void createScreen(int rows, int cols)
 {
-  printf("\033[07mHejsan\033[27m");
+  /* Create a line of spaces as large as the screen */
+  char* spaces = (char*)malloc((cols + 1) * sizeof(char));
+  for (int i = 0; i < cols; i++)
+    *(spaces + i) = ' ';
+  *(spaces + cols) = 0;
+  
+  /* Create the screen with the current frame, but do not fill it */
+  printf("\033[07m");
+  printf(spaces);
+  printf("\033[1;1H\033[01mZecora  \033[21mPress ESC three times for help");
+  printf("\033[27m");
+  printf("\033[%i;1H\033[07m", rows - 1);
+  printf(spaces);
+  printf("\033[%i;3H(%li,%li)  ", rows - 1, getRow() + 1, getColumn() + 1);
+  if (getFlags() & FLAG_MODIFIED)
+    printf("\033[41m");
+  char* filename = getFile();
+  if (filename)
+    {
+      long sep = 0;
+      for (long i = 0; *(filename + i); i++)
+	if (*(filename + i) == '/')
+	  sep = i;
+      *(filename + sep) = 0;
+      printf("%s/\033[01m%s\033[21;27m\n", filename, filename + sep + 1);
+      *(filename + sep) = '/';
+    }
+  else
+    printf("\033[01m*scratch*\033[21;27m\n");
+  char* frameAlert = getAlert();
+  if (frameAlert)
+    printf("%s", frameAlert);
+  printf("\033[00m\033[2;1H");
+  
+  /* Flush the screen */
   fflush(stdout);
 }
+
 
 void readInput(int cols)
 {

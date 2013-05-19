@@ -20,7 +20,26 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <limits.h>
 #include <errno.h>
+
+
+
+/**
+ * The file has been modified but not saved
+ */
+#define  FLAG_MODIFIED  1
+
+/**
+ * The mark has been set
+ */
+#define  FLAG_MARK_SET  2
+
+/**
+ * The mark is active
+ */
+#define  FLAG_MARK_ACTIVE  4
+
 
 
 /**
@@ -82,4 +101,44 @@ void alert(char* message);
  * @parma  col  The column to jump to, negative to keep the current position if row is unchanged and beginning otherwise
  */
 void applyJump(long row, long col);
+
+
+/**
+ * Gets the current row of the point in the current frame
+ * 
+ * @return  The current row of the point in the current frame
+ */
+long getRow();
+
+
+/**
+ * Gets the current column of the point in the current frame
+ * 
+ * @return  The current column of the point in the current frame
+ */
+long getColumn();
+
+
+/**
+ * Gets the file of the current frame
+ * 
+ * @return  The file of the current frame, null if none
+ */
+char* getFile();
+
+
+/**
+ * Gets the alert of the current frame
+ * 
+ * @return  The alert of the current frame, null if none
+ */
+char* getAlert();
+
+
+/**
+ * Get the flags for the current frame
+ * 
+ * @return  The flags for the current frame
+ */
+int getFlags();
 

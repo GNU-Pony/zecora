@@ -147,9 +147,8 @@ long openFile(char* filename)
 	  while (*(dirname + --namesize) != '/')
 	    ;
 	  *(dirname + namesize) = 0;
-	  if (!stat(dirname, &fileStats))
-	    if (S_ISDIR(fileStats.st_mode))
-	      error = fileExists = 0;
+	  if ((*(dirname + namesize) == 0) || (!stat(dirname, &fileStats) && S_ISDIR(fileStats.st_mode)))
+	    error = fileExists = 0;
 	  free(dirname);
 	}
       if (error != 0)
@@ -198,13 +197,11 @@ long openFile(char* filename)
       if (*(buffer + i) == '\n')
 	lines++;
   
-  /* Copy filename so it later can be freed */
-  long namesize = 0;
-  while (*(filename + namesize++))
-    ;
-  char* _filename = (char*)malloc(namesize * sizeof(char));
-  for (int i = 0; i < namesize; i++)
-    *(_filename + i) = *(filename + i);
+  /* Copy filename so it later can be freed as well as get the real path */
+  char* _filename = (char*)malloc(PATH_MAX * sizeof(char*));
+  char* returnedRealpath;
+  if ((returnedRealpath = realpath(filename, _filename)) == 0)
+    return errno;
   
   /* Ensure that another frame can be held */
   prepareFrameBuffer();
@@ -331,5 +328,60 @@ void applyJump(long row, long col)
   for (int i = 0; i < P; i++)
     end = (end << 8) | (*(line + i) & 255);
   *(frame + 1) = col <= end ? col : end;
+}
+
+
+/**
+ * Gets the current row of the point in the current frame
+ * 
+ * @return  The current row of the point in the current frame
+ */
+long getRow()
+{
+  return *(long*)*(frames + currentFrame);
+}
+
+
+/**
+ * Gets the current column of the point in the current frame
+ * 
+ * @return  The current column of the point in the current frame
+ */
+long getColumn()
+{
+  return *((long*)*(frames + currentFrame) + 1);
+}
+
+
+/**
+ * Gets the file of the current frame
+ * 
+ * @return  The file of the current frame, null if none
+ */
+char* getFile()
+{
+  return *((char**)*(frames + currentFrame) + 7);
+}
+
+
+/**
+ * Gets the alert of the current frame
+ * 
+ * @return  The alert of the current frame, null if none
+ */
+char* getAlert()
+{
+  return *((char**)*(frames + currentFrame) + 8);
+}
+
+
+/**
+ * Get the flags for the current frame
+ * 
+ * @return  The flags for the current frame
+ */
+int getFlags()
+{
+  return (int)*((long*)*(frames + currentFrame) + 10);
 }
 
