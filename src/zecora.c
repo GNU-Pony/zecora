@@ -165,10 +165,57 @@ void createScratch()
 }
 
 
+/**
+ * Opens a new file
+ * 
+ * @param   filename      The filename of the file to open
+ * @return  0             The file was successfully opened
+ * @return  <0            The file is already opened in the frame whose index is bitwise negation of the returned integer
+ * @return  >0            Failed to open the file, the returned integer is an error code.
+ * 
+ * @throws  EACCES        Search permission is denied for one of the directories in the path prefix of the path
+ * @throws  EFAULT        Bad address
+ * @throws  ELOOP         Too many symbolic links encountered while traversing the path.
+ * @throws  ENAMETOOLONG  The path is too long
+ * @throws  ENOENT        A component of the path does not exist, or the path is an empty string
+ * @throws  ENOMEM        Out of memory (i.e., kernel memory)
+ * @throws  ENOTDIR       A component of the path prefix of path is not a directory
+ * @throws  EOVERFLOW     The file size, inode number, or number of block is too large for the system
+ * @throws  256           The file is not a regular file
+ */
 int openFile(char* filename)
 {
-  return 1;
+  /* Verify that the file is a regular file or does not exist but can be created */
+  struct stat fileStats;
+  if (stat(filename, &fileStats))
+    {
+      int error = errno;
+      if ((error == ENOENT) && (*filename != 0))
+	{
+	  int namesize = 0;
+	  while (*(filename + namesize++))
+	    ;
+	  char* dirname = (char*)malloc(namesize * sizeof(char));
+	  *(dirname + --namesize) = 0;
+	  while (*(dirname + --namesize) == '/')
+	    ;
+	  while (*(dirname + --namesize) != '/')
+	    ;
+	  *(dirname + namesize) = 0;
+	  if (!stat(dirname, &fileStats))
+	    if (S_ISDIR(fileStats.st_mode))
+	      error = 0;
+	  free(dirname);
+	}
+      if (error != 0)
+	return error;
+    }
+  else if (S_ISREG(fileStats.st_mode))
+    return 256;
+  
+  return 0;
 }
+
 
 void jump(char* command)
 {
