@@ -148,18 +148,19 @@ void createScratch()
   /* Create new frame */
   currentFrame = openFrames++;
   void** frame = (void**)(*(frames + currentFrame) = (void*)malloc(8 * sizeof(void*)));
-  *(frame + 0) = 0;                            /* Point line */
-  *(frame + 1) = 0;                            /* Point column */
-  *(frame + 2) = 0;                            /* Mark line */
-  *(frame + 3) = 0;                            /* Mark column */
-  *(frame + 4) = 0;                            /* First visible line */
-  *(frame + 5) = (void*)1;                     /* Number of lines */
-  *(frame + 6) = 0;                            /* Filename */
-  *(frame + 7) = 0;                            /* Message */
-  *(frame + 8) = (void*)malloc(sizeof(char*)); /* Buffer */
+  *(frame + 0) = 0;                            /* Point line           */
+  *(frame + 1) = 0;                            /* Point column         */
+  *(frame + 2) = 0;                            /* Mark line            */
+  *(frame + 3) = 0;                            /* Mark column          */
+  *(frame + 4) = 0;                            /* First visible line   */
+  *(frame + 5) = 0;                            /* First visible column */
+  *(frame + 6) = (void*)1;                     /* Number of lines      */
+  *(frame + 7) = 0;                            /* Filename             */
+  *(frame + 8) = 0;                            /* Message              */
+  *(frame + 9) = (void*)malloc(sizeof(char*)); /* Buffer               */
   
   /* Create one empty line */
-  char* line0 = *(char**)*(frame + 8) = (char*)malloc(9 * sizeof(char)); /* line:* prepared:8 */
+  char* line0 = *(char**)*(frame + 9) = (char*)malloc(9 * sizeof(char)); /* line:* prepared:8 */
   for (int i = 0; i < 9; i++)
     *(line0 + i) = 0;
 }
@@ -247,6 +248,37 @@ long openFile(char* filename)
 	  size += got;
       fclose(file);
     }
+  
+  /* Count the number of lines */
+  long lines = 1;
+  for (long i = 0; *(buffer + i); i++)
+    if (*(buffer + i) == '\n')
+      lines++;
+  
+  /* Copy filename so it later can be freed */
+  long namesize = 0;
+  while (*(filename + namesize++))
+    ;
+  char* _filename = (char*)malloc(namesize * sizeof(char));
+  for (int i = 0; i < namesize; i++)
+    *(_filename + i) = *(filename + i);
+  
+  /* Ensure that another frame can be held */
+  prepareFrameBuffer();
+  
+  /* Create new frame */
+  currentFrame = openFrames++;
+  void** frame = (void**)(*(frames + currentFrame) = (void*)malloc(8 * sizeof(void*)));
+  *(frame + 0) = 0;                                    /* Point line           */
+  *(frame + 1) = 0;                                    /* Point column         */
+  *(frame + 2) = 0;                                    /* Mark line            */
+  *(frame + 3) = 0;                                    /* Mark column          */
+  *(frame + 4) = 0;                                    /* First visible line   */
+  *(frame + 5) = 0;                                    /* First visible column */
+  *(frame + 6) = (void*)lines;                         /* Number of lines      */
+  *(frame + 7) = _filename;                            /* Filename             */
+  *(frame + 8) = 0;                                    /* Message              */
+  *(frame + 9) = (void*)malloc(lines * sizeof(char*)); /* Buffer               */
   
   /* Report that a new frame as been created */
   return 0;
