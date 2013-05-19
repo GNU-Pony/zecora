@@ -142,7 +142,8 @@ void jump(char* command)
 
 void createScreen(int rows, int cols)
 {
-  /**/
+  printf("\033[07mHejsan\033[27m");
+  fflush(stdout);
 }
 
 void readInput(int cols)

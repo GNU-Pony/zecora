@@ -83,7 +83,7 @@ void createScratch()
   
   /* Create new frame */
   currentFrame = openFrames++;
-  void** frame = (void**)(*(frames + currentFrame) = (void*)malloc(8 * sizeof(void*)));
+  void** frame = (void**)(*(frames + currentFrame) = (void*)malloc(11 * sizeof(void*)));
   *(frame +  0) = 0;                            /* Point line           */
   *(frame +  1) = 0;                            /* Point column         */
   *(frame +  2) = 0;                            /* Mark line            */
@@ -97,7 +97,7 @@ void createScratch()
   *(frame + 10) = 0;                            /* Flags                */
   
   /* Create one empty line */
-  char* line0 = *(char**)*(frame + 2 * P) = (char*)malloc(2 * P * sizeof(char)); /* used:P, allocated:P, line:* */
+  char* line0 = *(char**)*(frame + 9) = (char*)malloc(2 * P * sizeof(char)); /* used:P, allocated:P, line:* */
   for (int i = 0; i < 2 * P; i++)
     *(line0 + i) = 0;
 }
@@ -211,7 +211,7 @@ long openFile(char* filename)
   
   /* Create new frame */
   currentFrame = openFrames++;
-  void** frame = (void**)(*(frames + currentFrame) = (void*)malloc(8 * sizeof(void*)));
+  void** frame = (void**)(*(frames + currentFrame) = (void*)malloc(11 * sizeof(void*)));
   *(frame +  0) = 0;                                    /* Point line           */
   *(frame +  1) = 0;                                    /* Point column         */
   *(frame +  2) = 0;                                    /* Mark line            */
@@ -242,7 +242,7 @@ long openFile(char* filename)
 	  bufptr = start;
 	  
 	  /* Create line buffer and fill it with metadata */
-	  char* line = *((char**)*(frame + 2 * P + linesize) + i) = (char*)malloc((2 * P + linesize) * sizeof(char)); /* used:P, allocated:P, line:* */
+	  char* line = *((char**)*(frame + 9) + i) = (char*)malloc((2 * P + linesize) * sizeof(char)); /* used:P, allocated:P, line:* */
 	  for (int _ = 0; _ < 2; _++)
 	    for (int j = P - 1; j >= 0; j--)
 	      *line++ = (linesize >> (j * 8)) & 255;
@@ -256,7 +256,7 @@ long openFile(char* filename)
   else
     {
       /* No file was actually openned create an empty document */
-      char* line0 = *(char**)*(frame + 2 * P) = (char*)malloc(2 * P * sizeof(char)); /* used:P, allocated:P, line:* */
+      char* line0 = *(char**)*(frame + 9) = (char*)malloc(2 * P * sizeof(char)); /* used:P, allocated:P, line:* */
       for (int i = 0; i < 2 * P; i++)
 	*(line0 + i) = 0;
     }
