@@ -18,13 +18,13 @@
  */
 #include <stdlib.h>
 #include <stdio.h>
-#include <termios.h>
-#include <sys/ioctl.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <errno.h>
 
-#include "frames.h"
 
-
-void jump(char* command);
-void createScreen(int rows, int cols);
-void readInput(int cols);
+void prepareFrameBuffer();
+void createScratch();
+long openFile(char* filename);
+long findFile(char* filename);
 
