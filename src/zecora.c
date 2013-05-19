@@ -346,19 +346,19 @@ long findFile(char* filename)
   for (int i = 0; i < openFrames; i++)
     {
       char** frame = (char**)*(frames + i);
-      char* framefile = *(frame + 7);
-      if (framefile)
+      char* frameFile = *(frame + 7);
+      if (frameFile)
 	{
 	  /* Check of the frames file matches the wanted file */
 	  char* f = filename;
-	  while ((*framefile && *f) && (*framefile == *f))
+	  while ((*frameFile && *f) && (*frameFile == *f))
 	    {
-	      framefile++;
+	      frameFile++;
 	      f++;
 	    }
 	  
 	  /* Report index of frame if it was match */
-	  if ((*framefile | *f) == 0)
+	  if ((*frameFile | *f) == 0)
 	    return i;
 	}
     }
