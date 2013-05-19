@@ -23,8 +23,46 @@
 #include <errno.h>
 
 
+/**
+ * Prepare the frame buffer to hold one more frame
+ */
 void prepareFrameBuffer();
+
+
+/**
+ * Create an empty document that is not yet associated with a file
+ */
 void createScratch();
+
+
+/**
+ * Opens a new file
+ * 
+ * @param   filename      The filename of the file to open
+ * @return  0             The file was successfully opened
+ * @return  <0            The file is already opened in the frame whose index is bitwise negation of the returned integer
+ * @return  >0            Failed to open the file, the returned integer is an error code.
+ * 
+ * @throws  EACCES        Search permission is denied for one of the directories in the path prefix of the path
+ * @throws  EFAULT        Bad address
+ * @throws  ELOOP         Too many symbolic links encountered while traversing the path.
+ * @throws  ENAMETOOLONG  The path is too long
+ * @throws  ENOENT        A component of the path does not exist, or the path is an empty string
+ * @throws  ENOMEM        Out of memory (i.e., kernel memory)
+ * @throws  ENOTDIR       A component of the path prefix of path is not a directory
+ * @throws  EOVERFLOW     The file size, inode number, or number of block is too large for the system
+ * @throws  256           The file is not a regular file
+ * @throws  257           Failed to read file
+ */
 long openFile(char* filename);
+
+
+/**
+ * Find the frame that contains a specific file
+ * 
+ * @param   filename  The name of the file
+ * @return  >=0       The index of the frame
+ * @return  -1        No frame contains the file
+ */
 long findFile(char* filename);
 
