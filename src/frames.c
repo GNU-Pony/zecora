@@ -173,23 +173,27 @@ long openFile(char* filename)
   if (fileExists)
     {
       for (;;)
-	if ((got = fread(buffer + size, 1, blockSize < reportedSize ? blockSize : reportedSize, file)) != blockSize)
-	  {
-	    if (feof(file))
-	      {
-		/* End of file */
-		size += got;
-		clearerr(file);
-		break;
-	      }
-	    /* Failed to read the file */
-	    free(buffer);
-	    clearerr(file);
-	    fclose(file);
-	    return 257;
-	  }
-	else
-	  size += got;
+	{
+	  unsigned long readBlock = reportedSize - size;
+	  readBlock = blockSize < readBlock ? blockSize : readBlock;
+	  if ((got = fread(buffer + size, 1, readBlock, file)) != blockSize)
+	    {
+	      if (feof(file))
+		{
+		  /* End of file */
+		  size += got;
+		  clearerr(file);
+		  break;
+		}
+	      /* Failed to read the file */
+	      free(buffer);
+	      clearerr(file);
+	      fclose(file);
+	      return 257;
+	    }
+	  else
+	    size += got;
+	}
       fclose(file);
     }
   
