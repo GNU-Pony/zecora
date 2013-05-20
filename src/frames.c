@@ -354,6 +354,28 @@ long getColumn()
 
 
 /**
+ * Gets the first visible row in the current frame
+ * 
+ * @return  The first visible row in the current frame
+ */
+long getFirstRow()
+{
+  return *((long*)*(frames + currentFrame) + 4);
+}
+
+
+/**
+ * Gets the first visible column on the current row of the point in the current frame
+ * 
+ * @return  The first visible column on the current row of the point in the current frame
+ */
+long getFirstColumn()
+{
+  return *((long*)*(frames + currentFrame) + 5);
+}
+
+
+/**
  * Gets the file of the current frame
  * 
  * @return  The file of the current frame, null if none

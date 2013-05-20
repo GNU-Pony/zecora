@@ -120,6 +120,22 @@ long getColumn();
 
 
 /**
+ * Gets the first visible row in the current frame
+ * 
+ * @return  The first visible row in the current frame
+ */
+long getFirstRow();
+
+
+/**
+ * Gets the first visible column on the current row of the point in the current frame
+ * 
+ * @return  The first visible column on the current row of the point in the current frame
+ */
+long getFirstColumn();
+
+
+/**
  * Gets the file of the current frame
  * 
  * @return  The file of the current frame, null if none

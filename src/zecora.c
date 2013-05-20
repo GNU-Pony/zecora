@@ -176,6 +176,9 @@ void createScreen(int rows, int cols)
     printf("%s", frameAlert);
   printf("\033[00m\033[2;1H");
   
+  /* Move the cursor to the position of the point */
+  printf("\033[%i;%iH", getFirstRow() - getRow() + 2, getFirstColumn() - getColumn() + 1);
+  
   /* Flush the screen */
   fflush(stdout);
 }
