@@ -152,9 +152,52 @@ char* getAlert();
 
 
 /**
- * Get the flags for the current frame
+ * Gets the flags for the current frame
  * 
  * @return  The flags for the current frame
  */
 int getFlags();
+
+
+/**
+ * Gets the number of lines in the current frame
+ * 
+ * @return  The number of lines in the current frame
+ */
+long getLineCount();
+
+
+/**
+ * Gets the line buffes in the current frame
+ * 
+ * @return  The line buffes in the current frame
+ */
+char** getLineBuffers();
+
+
+/**
+ * Gets the length of a line
+ * 
+ * @param   lineBuffer  The line buffer
+ * @return              The length of a line
+ */
+long getLineLenght(char* lineBuffer);
+
+
+/**
+ * Gets the size of a line buffer
+ * 
+ * @param   lineBuffer  The line buffer
+ * @return              The size of a line buffer
+ */
+long getLineBufferSize(char* lineBuffer);
+
+
+/**
+ * Gets the line content of a line buffer
+ * 
+ * @param   lineBuffer  The line buffer
+ * @return              The line content of a line buffer
+ */
+char* getLineContent(char* lineBuffer);
 

@@ -62,8 +62,10 @@ int main(int argc, char** argv)
   int fileLoaded = 0;
   for (int i = 1; i < argc; i++)
     if (**(argv + i) != ':')
+      {
       /* Load file */
       fileLoaded = openFile(*(argv + i));
+      }
     else if (fileLoaded)
       {
 	/* Jump in last openned file */
@@ -176,8 +178,64 @@ void createScreen(int rows, int cols)
     printf("%s", frameAlert);
   printf("\033[00m\033[2;1H");
   
+  /* Fill the screen */
+  long r = getRow();
+  long n = getLineCount(), m = getFirstRow() + rows - 3;
+  char** lines = getLineBuffers();
+  n = n < m ? n : m;
+  cols--;
+  for (long i = getFirstRow(); i < n; i++)
+    {
+      m = getLineLenght(*(lines + i));
+      long j = i == r ? getFirstColumn() : 0;
+      m = m < (cols + j) ? m : (cols + j);
+      char* line = getLineContent(*(lines + i));
+      /* TODO add support for combining diacriticals */
+      /* TODO colour comment lines */
+      long col = 0;
+      for (; (j <= m) && (col < cols); j++)
+	{
+	  char c = *(line + j);
+	  if (j == m)
+	    if ((c & 0xC0) == 0x80)
+	      {
+		printf("%c", c);
+		m++;
+	      }
+	    else
+	      break;
+	  else if (c == '\t')
+	    {
+	      printf(" ");
+	      col++;
+	      while ((col < cols) && (col & 7))
+		{
+		  printf(" ");
+		  col++;
+		}
+	    }
+	  else if ((0 <= c) && (c < ' '))
+	    {
+	      printf("\033[32m%c\033[39m", c);
+	      col++;
+	    }
+	  else
+	    {
+	      printf("%c", c);
+	      if ((c & 0xC0) == 0x80)
+		m++;
+	      else
+		col++;
+	    }
+	}
+      printf("\033[00m\n");
+    }
+  cols++;
+  
+  /* TODO ensure that the point is visible */
+  
   /* Move the cursor to the position of the point */
-  printf("\033[%i;%iH", getFirstRow() - getRow() + 2, getFirstColumn() - getColumn() + 1);
+  printf("\033[%li;%liH", getFirstRow() - getRow() + 2, getFirstColumn() - getColumn() + 1);
   
   /* Flush the screen */
   fflush(stdout);

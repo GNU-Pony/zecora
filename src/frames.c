@@ -154,7 +154,7 @@ long openFile(char* filename)
       if (error != 0)
 	return error;
     }
-  else if (S_ISREG(fileStats.st_mode))
+  else if (S_ISREG(fileStats.st_mode) == 0)
     return 256;
   
   /* Get the optimal reading block size */
@@ -229,7 +229,7 @@ long openFile(char* filename)
 	{
 	  /* Get the span of the line */
 	  long start = bufptr;
-	  while (bufptr < size)
+	  while ((unsigned long)bufptr < size)
 	    {
 	      if (*(buffer + bufptr) == '\n')
 		break;
@@ -398,12 +398,73 @@ char* getAlert()
 
 
 /**
- * Get the flags for the current frame
+ * Gets the flags for the current frame
  * 
  * @return  The flags for the current frame
  */
 int getFlags()
 {
   return (int)*((long*)*(frames + currentFrame) + 10);
+}
+
+
+/**
+ * Gets the number of lines in the current frame
+ * 
+ * @return  The number of lines in the current frame
+ */
+long getLineCount()
+{
+  return *((long*)*(frames + currentFrame) + 6);
+}
+
+
+/**
+ * Gets the line buffes in the current frame
+ * 
+ * @return  The line buffes in the current frame
+ */
+char** getLineBuffers()
+{
+  return *((char***)*(frames + currentFrame) + 9);
+}
+
+
+/**
+ * Gets the length of a line
+ * 
+ * @param   lineBuffer  The line buffer
+ * @return              The length of a line
+ */
+long getLineLenght(char* lineBuffer)
+{
+  long rc = 0;
+  for (int i = 0; i < P; i++)
+    rc = (rc << 8) | (*(lineBuffer + i) & 255);
+  return rc;
+}
+
+
+/**
+ * Gets the size of a line buffer
+ * 
+ * @param   lineBuffer  The line buffer
+ * @return              The size of a line buffer
+ */
+long getLineBufferSize(char* lineBuffer)
+{
+  return getLineLenght(lineBuffer + P);
+}
+
+
+/**
+ * Gets the line content of a line buffer
+ * 
+ * @param   lineBuffer  The line buffer
+ * @return              The line content of a line buffer
+ */
+char* getLineContent(char* lineBuffer)
+{
+  return lineBuffer + 2 * P;
 }
 
