@@ -176,7 +176,9 @@ long openFile(char* filename)
 	{
 	  unsigned long readBlock = reportedSize - size;
 	  readBlock = blockSize < readBlock ? blockSize : readBlock;
-	  if ((got = fread(buffer + size, 1, readBlock, file)) != blockSize)
+	  if (readBlock == 0)
+	    break;
+	  if ((got = fread(buffer + size, 1, readBlock, file)) != readBlock)
 	    {
 	      if (feof(file))
 		{
@@ -212,6 +214,16 @@ long openFile(char* filename)
       char* returnedRealpath;
       if ((returnedRealpath = realpath(filename, _filename)) == 0)
 	return errno;
+    }
+  else
+    {
+      /* TODO get the realpath for the directroy */
+      long n = 0;
+      while (*(filename + n++))
+	;
+      _filename = (char*)malloc(n * sizeof(char));
+      for (long i = 0; i < n; i++)
+	*(_filename + i) = *(filename + i);
     }
   
   /* Ensure that another frame can be held */
