@@ -49,8 +49,8 @@ int main(int argc, char** argv)
   stty.c_lflag &= ~(ICANON | ECHO | ISIG);
   tcsetattr(STDIN_FILENO, TCSAFLUSH, &stty);
   
-  printf("\033[?1049h"   /* Initialise subterminal, if using an xterm */
-	 "\033[H\033[2J" /* Clear the terminal, subterminal, if initialised is already clean */
+  printf(//"\033[?1049h"   /* Initialise subterminal, if using an xterm */
+	 //"\033[H\033[2J" /* Clear the terminal, subterminal, if initialised is already clean */
 	 "\033[?8c");    /* Switch to block cursor, if using TTY */
   /* Apply the previous instruction */
   fflush(stdout);
@@ -63,8 +63,8 @@ int main(int argc, char** argv)
   for (int i = 1; i < argc; i++)
     if (**(argv + i) != ':')
       {
-      /* Load file */
-      fileLoaded = openFile(*(argv + i));
+	/* Load file */
+	fileLoaded = openFile(*(argv + i));
       }
     else if (fileLoaded)
       {
@@ -74,19 +74,21 @@ int main(int argc, char** argv)
       }
   
   /* Create the screen and start display the files */
-  createScreen(rows, cols);
+  //createScreen(rows, cols);
   /* Start interaction */
   readInput(cols);
   
   printf("\033[?2c"      /* Restore cursor to underline, if using TTY */
-	 "\033[H\033[2J" /* Clear the terminal, useless if in subterminal and not TTY */
-	 "\033[?1049l"); /* Terminate subterminal, if using an xterm */
+	 //"\033[H\033[2J" /* Clear the terminal, useless if in subterminal and not TTY */
+	 //"\033[?1049l"   /* Terminate subterminal, if using an xterm */
+	 );
   /* Apply the previous instruction */
   fflush(stdout);
   /* Return the terminal to its previous state */
   tcsetattr(STDIN_FILENO, TCSAFLUSH, &saved_stty);
   
-  /* Exit and report success */
+  /* Release resources, exit and report success */
+  freeFrames();
   return 0;
 }
 

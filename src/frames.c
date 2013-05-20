@@ -141,10 +141,12 @@ long openFile(char* filename)
 	  while (*(filename + namesize++))
 	    ;
 	  char* dirname = (char*)malloc(namesize * sizeof(char));
+	  for (long i = 0; i < namesize; i++)
+	    *(dirname + i) = *(filename + i);
 	  *(dirname + --namesize) = 0;
-	  while (*(dirname + --namesize) == '/')
+	  while (namesize && (*(dirname + --namesize) == '/'))
 	    ;
-	  while (*(dirname + --namesize) != '/')
+	  while (namesize && (*(dirname + --namesize) != '/'))
 	    ;
 	  *(dirname + namesize) = 0;
 	  if ((*(dirname + namesize) == 0) || (!stat(dirname, &fileStats) && S_ISDIR(fileStats.st_mode)))
@@ -161,8 +163,9 @@ long openFile(char* filename)
   size_t blockSize = fileExists ? (size_t)(fileStats.st_blksize) : 0;
   /* Get the size of the file */
   unsigned long size = 0;
+  unsigned long reportedSize = fileStats.st_size;
   /* Buffer for the content file */
-  char* buffer = fileExists ? (char*)malloc(fileStats.st_size) : 0;
+  char* buffer = fileExists ? (char*)malloc(reportedSize) : 0;
   
   /* Read file */
   size_t got;
@@ -170,7 +173,7 @@ long openFile(char* filename)
   if (fileExists)
     {
       for (;;)
-	if ((got = fread(buffer, 1, blockSize, file)) != blockSize)
+	if ((got = fread(buffer + size, 1, blockSize < reportedSize ? blockSize : reportedSize, file)) != blockSize)
 	  {
 	    if (feof(file))
 	      {
@@ -193,15 +196,19 @@ long openFile(char* filename)
   /* Count the number of lines */
   long lines = 1;
   if ((buffer))
-    for (long i = 0; *(buffer + i); i++)
+    for (unsigned long i = 0; i < size; i++)
       if (*(buffer + i) == '\n')
 	lines++;
   
   /* Copy filename so it later can be freed as well as get the real path */
-  char* _filename = (char*)malloc(PATH_MAX * sizeof(char*));
-  char* returnedRealpath;
-  if ((returnedRealpath = realpath(filename, _filename)) == 0)
-    return errno;
+  char* _filename = 0;
+  if ((buffer))
+    {
+      _filename = (char*)malloc(PATH_MAX * sizeof(char));
+      char* returnedRealpath;
+      if ((returnedRealpath = realpath(filename, _filename)) == 0)
+	return errno;
+    }
   
   /* Ensure that another frame can be held */
   prepareFrameBuffer();
@@ -466,5 +473,31 @@ long getLineBufferSize(char* lineBuffer)
 char* getLineContent(char* lineBuffer)
 {
   return lineBuffer + 2 * P;
+}
+
+
+/**
+ * Free all frame resources
+ */
+void freeFrames()
+{
+  for (long i = 0; i < openFrames; i++)
+    {
+      void** frame = (void**)*(frames + i);
+      long lines = (long)*(frame + 6);
+      if (*(frame + 7))
+	free(*(frame + 7));
+      if (*(frame + 8))
+	free(*(frame + 8));
+      if (*(frame + 9))
+	{
+	  char** lineBuffers = (char**)*(frame + 9);
+	  for (long j = 0; j < lines; j++)
+	    free(*(lineBuffers + j));
+	  free(*(frame + 9));
+	}
+      free(frame);
+    }
+  free(frames);
 }
 

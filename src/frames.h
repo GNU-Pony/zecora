@@ -201,3 +201,9 @@ long getLineBufferSize(char* lineBuffer);
  */
 char* getLineContent(char* lineBuffer);
 
+
+/**
+ * Free all frame resources
+ */
+void freeFrames();
+
