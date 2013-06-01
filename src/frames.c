@@ -270,6 +270,9 @@ long openFile(char* filename)
 	  /* Fill the line with the data */
 	  for (int j = 0; j < linesize; j++)
 	    *(line + j) = *(buffer + bufptr++);
+	  
+	  /* Jump over the \n at the end of the line so the following lines does not appear to be empty */
+	  bufptr++;
 	}
       free(buffer);
     }
