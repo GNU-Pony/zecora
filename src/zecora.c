@@ -68,8 +68,8 @@ int main(int argc, char** argv)
       }
     else if (fileLoaded)
       {
-	/* Jump in last openned file */
-	jump(*(argv + i) + 1);
+	/* Jump in last opened file */
+	jump(*(argv + i) + 1); /* TODO this does not work*/
 	fileLoaded = 0;
       }
   
