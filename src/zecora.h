@@ -55,9 +55,9 @@
 #endif
 
 
-void jump(char* command);
-void create_screen(dimm_t rows, dimm_t cols);
-void read_input(dimm_t cols);
+static void jump(char* command);
+static void create_screen(dimm_t rows, dimm_t cols);
+static void read_input(dimm_t cols);
 
 
 #endif

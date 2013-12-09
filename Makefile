@@ -1,7 +1,8 @@
-OPTIMISE = -Os
+OPTIMISE = -Os -Wl,--gc-sections -fdata-sections -ffunction-sections -s \
+           -ffast-math -fomit-frame-pointer
 STD = gnu11
 WARNS = -Wall -Wextra -pedantic
-LDFLAGS = -static
+STATIC = -static -fwhole-program
 X = 
 
 
@@ -16,7 +17,8 @@ obj/%.o: src/%.c src/%.h src/types.h
 
 bin/zecora: obj/frames.o obj/zecora.o
 	@mkdir -p bin
-	$(CC) $(OPTIMISE) -std=$(STD) $(WARNS) $(LDFLAGS) $(X) -o $@ $^
+	$(CC) $(OPTIMISE) -std=$(STD) $(WARNS) $(STATIC) $(X) -o $@ $^
+	upx --best --ultra-brute $@
 
 
 .PHONY: clean

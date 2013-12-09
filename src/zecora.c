@@ -133,7 +133,7 @@ int main(int argc, char** argv)
  * 
  * @param  command  The jump command, in the format `[%row][:%column]`
  */
-void jump(char* command)
+static void jump(char* command)
 {
   byte_t has = 0, state = 1;
   pos_t row = 0, col = 0;
@@ -183,7 +183,7 @@ void jump(char* command)
 }
 
 
-void create_screen(dimm_t rows, dimm_t cols)
+static void create_screen(dimm_t rows, dimm_t cols)
 {
   char* spaces;
   dimm_t i;
@@ -288,7 +288,7 @@ void create_screen(dimm_t rows, dimm_t cols)
 }
 
 
-void read_input(dimm_t cols)
+static void read_input(dimm_t cols)
 {
   getchar();
 }
