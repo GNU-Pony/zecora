@@ -1,11 +1,14 @@
 _/
+obj
 bin/
 .*
 !.git*
+\#*\#
 *~
 *.bak
 *.swo
 *.swp
 *.gch
 *.o
-\#*\#
+*.out
+
