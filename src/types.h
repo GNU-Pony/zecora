@@ -16,37 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __ZECORA_H__
-#define __ZECORA_H__
+#ifndef __TYPES_H__
+#define __TYPES_H__
 
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <termios.h>
-#include <sys/ioctl.h>
-
-#include "frames.h"
-#include "types.h"
+#include <inttypes.h>
 
 
-/**
- * Program does not function with a narrower terminal
- */
-#ifndef MINIMUM_COLS
-#define MINIMUM_COLS  20
-#endif
-
-/**
- * Program does not function with a shorter terminal
- */
-#ifndef MINIMUM_ROWS
-#define MINIMUM_ROWS  10
-#endif
-
-
-void jump(char* command);
-void create_screen(dimm_t rows, dimm_t cols);
-void read_input(dimm_t cols);
+typedef unsigned short int  dimm_t;
+typedef int_least64_t       pos_t;
+typedef int_least8_t        bool_t;
+typedef int_least8_t        byte_t;
 
 
 #endif

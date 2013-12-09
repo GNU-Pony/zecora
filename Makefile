@@ -9,7 +9,7 @@ all: bin/zecora
 
 obj/%.o: src/frames.h
 
-obj/%.o: src/%.c src/%.h
+obj/%.o: src/%.c src/%.h src/types.h
 	@mkdir -p obj
 	$(CC) $(OPTIMISE) -std=$(STD) $(WARNS) -c -o $@ $<
 

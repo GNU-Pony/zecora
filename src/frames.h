@@ -16,12 +16,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifndef __FRAMES_H__
+#define __FRAMES_H__
+
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <limits.h>
 #include <errno.h>
+
+#include "types.h"
 
 
 
@@ -45,13 +51,13 @@
 /**
  * Prepare the frame buffer to hold one more frame
  */
-void prepareFrameBuffer();
+void prepare_frame_buffer();
 
 
 /**
  * Create an empty document that is not yet associated with a file
  */
-void createScratch();
+void create_scratch();
 
 
 /**
@@ -73,7 +79,7 @@ void createScratch();
  * @throws  256           The file is not a regular file
  * @throws  257           Failed to read file
  */
-long openFile(char* filename);
+long open_file(char* filename);
 
 
 /**
@@ -83,7 +89,7 @@ long openFile(char* filename);
  * @return  >=0       The index of the frame
  * @return  -1        No frame contains the file
  */
-long findFile(char* filename);
+long find_file(char* filename);
 
 
 /**
@@ -100,7 +106,7 @@ void alert(char* message);
  * @param  row  The line to jump to, negative to keep the current
  * @parma  col  The column to jump to, negative to keep the current position if row is unchanged and beginning otherwise
  */
-void applyJump(long row, long col);
+void apply_jump(long row, long col);
 
 
 /**
@@ -108,7 +114,7 @@ void applyJump(long row, long col);
  * 
  * @return  The current row of the point in the current frame
  */
-long getRow();
+long get_row();
 
 
 /**
@@ -116,7 +122,7 @@ long getRow();
  * 
  * @return  The current column of the point in the current frame
  */
-long getColumn();
+long get_column();
 
 
 /**
@@ -124,7 +130,7 @@ long getColumn();
  * 
  * @return  The first visible row in the current frame
  */
-long getFirstRow();
+long get_first_row();
 
 
 /**
@@ -132,7 +138,7 @@ long getFirstRow();
  * 
  * @return  The first visible column on the current row of the point in the current frame
  */
-long getFirstColumn();
+long get_first_column();
 
 
 /**
@@ -140,7 +146,7 @@ long getFirstColumn();
  * 
  * @return  The file of the current frame, null if none
  */
-char* getFile();
+char* get_file();
 
 
 /**
@@ -148,7 +154,7 @@ char* getFile();
  * 
  * @return  The alert of the current frame, null if none
  */
-char* getAlert();
+char* get_alert();
 
 
 /**
@@ -156,7 +162,7 @@ char* getAlert();
  * 
  * @return  The flags for the current frame
  */
-int getFlags();
+int get_flags();
 
 
 /**
@@ -164,7 +170,7 @@ int getFlags();
  * 
  * @return  The number of lines in the current frame
  */
-long getLineCount();
+long get_line_count();
 
 
 /**
@@ -172,7 +178,7 @@ long getLineCount();
  * 
  * @return  The line buffes in the current frame
  */
-char** getLineBuffers();
+char** get_line_buffers();
 
 
 /**
@@ -181,7 +187,7 @@ char** getLineBuffers();
  * @param   lineBuffer  The line buffer
  * @return              The length of a line
  */
-long getLineLenght(char* lineBuffer);
+long get_line_lenght(char* lineBuffer);
 
 
 /**
@@ -190,7 +196,7 @@ long getLineLenght(char* lineBuffer);
  * @param   lineBuffer  The line buffer
  * @return              The size of a line buffer
  */
-long getLineBufferSize(char* lineBuffer);
+long get_line_buffer_size(char* lineBuffer);
 
 
 /**
@@ -199,11 +205,14 @@ long getLineBufferSize(char* lineBuffer);
  * @param   lineBuffer  The line buffer
  * @return              The line content of a line buffer
  */
-char* getLineContent(char* lineBuffer);
+char* get_line_content(char* lineBuffer);
 
 
 /**
  * Free all frame resources
  */
-void freeFrames();
+void free_frames();
+
+
+#endif
 

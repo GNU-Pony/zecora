@@ -28,17 +28,17 @@
 /**
  * The number of opened frames
  */
-static long openFrames = 0;
+static long open_frames = 0;
 
 /**
- * The number of frames the fits in `frames`
+ * The number of frames that fits in `frames`
  */
-static long preparedFrames = 0;
+static long prepared_frames = 0;
 
 /**
  * The index of the current frame
  */
-static long currentFrame = -1;
+static long current_frame = -1;
 
 /**
  * The opened frames
@@ -50,21 +50,21 @@ static void** frames = 0;
 /**
  * Prepare the frame buffer to hold one more frame
  */
-void prepareFrameBuffer()
+void prepare_frame_buffer()
 {
   if (frames == 0)
   {
     /* Prepare to hold 4 frames initially */
-    preparedFrames = 4;
-    frames = (void**)malloc(preparedFrames * sizeof(void*));
+    prepared_frames = 4;
+    frames = (void**)malloc(prepared_frames * sizeof(void*));
   }
-  else if (openFrames == preparedFrames)
+  else if (open_frames == prepared_frames)
   {
     /* When full, prepare to hold twice as much */
-    preparedFrames <<= 1;
-    void** newFrames = (void**)malloc(preparedFrames * sizeof(void*));
+    prepared_frames <<= 1;
+    void** newFrames = (void**)malloc(prepared_frames * sizeof(void*));
     /* Copy old buffer to new buffer */
-    for (int i = 0; i < openFrames; i++)
+    for (int i = 0; i < open_frames; i++)
       *(newFrames + i) = *(frames + i);
     /* Free old buffer and apply new buffer */
     free(frames);
@@ -76,14 +76,14 @@ void prepareFrameBuffer()
 /**
  * Create an empty document that is not yet associated with a file
  */
-void createScratch()
+void create_scratch()
 {
   /* Ensure that another frame can be held */
-  prepareFrameBuffer();
+  prepare_frame_buffer();
   
   /* Create new frame */
-  currentFrame = openFrames++;
-  void** frame = (void**)(*(frames + currentFrame) = (void*)malloc(11 * sizeof(void*)));
+  current_frame = open_frames++;
+  void** frame = (void**)(*(frames + current_frame) = (void*)malloc(11 * sizeof(void*)));
   *(frame +  0) = 0;                            /* Point line           */
   *(frame +  1) = 0;                            /* Point column         */
   *(frame +  2) = 0;                            /* Mark line            */
@@ -122,17 +122,17 @@ void createScratch()
  * @throws  256           The file is not a regular file
  * @throws  257           Failed to read file
  */
-long openFile(char* filename)
+long open_file(char* filename)
 {
   /* Return the ~index of the frame holding the file if it already exists */
-  long found = findFile(filename);
+  long found = find_file(filename);
   if (found >= 0)
     return ~found;
   
   /* Verify that the file is a regular file or does not exist but can be created */
-  int fileExists = 1;
-  struct stat fileStats;
-  if (stat(filename, &fileStats))
+  int file_exists = 1;
+  struct stat file_stats;
+  if (stat(filename, &file_stats))
     {
       int error = errno;
       if ((error == ENOENT) && (*filename != 0))
@@ -149,36 +149,36 @@ long openFile(char* filename)
 	  while (namesize && (*(dirname + --namesize) != '/'))
 	    ;
 	  *(dirname + namesize) = 0;
-	  if ((*(dirname + namesize) == 0) || (!stat(dirname, &fileStats) && S_ISDIR(fileStats.st_mode)))
-	    error = fileExists = 0;
+	  if ((*(dirname + namesize) == 0) || (!stat(dirname, &file_stats) && S_ISDIR(file_stats.st_mode)))
+	    error = file_exists = 0;
 	  free(dirname);
 	}
       if (error != 0)
 	return error;
     }
-  else if (S_ISREG(fileStats.st_mode) == 0)
+  else if (S_ISREG(file_stats.st_mode) == 0)
     return 256;
   
   /* Get the optimal reading block size */
-  size_t blockSize = fileExists ? (size_t)(fileStats.st_blksize) : 0;
+  size_t block_size = file_exists ? (size_t)(file_stats.st_blksize) : 0;
   /* Get the size of the file */
   unsigned long size = 0;
-  unsigned long reportedSize = fileStats.st_size;
+  unsigned long reported_size = file_stats.st_size;
   /* Buffer for the content file */
-  char* buffer = fileExists ? (char*)malloc(reportedSize) : 0;
+  char* buffer = file_exists ? malloc(reported_size) : NULL;
   
   /* Read file */
   size_t got;
-  FILE* file = fileExists ? fopen(filename, "r") : 0;
-  if (fileExists)
+  FILE* file = file_exists ? fopen(filename, "r") : NULL;
+  if (file_exists)
     {
       for (;;)
 	{
-	  unsigned long readBlock = reportedSize - size;
-	  readBlock = blockSize < readBlock ? blockSize : readBlock;
-	  if (readBlock == 0)
+	  unsigned long read_block = reported_size - size;
+	  read_block = block_size < read_block ? block_size : read_block;
+	  if (read_block == 0)
 	    break;
-	  if ((got = fread(buffer + size, 1, readBlock, file)) != readBlock)
+	  if ((got = fread(buffer + size, 1, read_block, file)) != read_block)
 	    {
 	      if (feof(file))
 		{
@@ -211,8 +211,8 @@ long openFile(char* filename)
   if ((buffer))
     {
       _filename = (char*)malloc(PATH_MAX * sizeof(char));
-      char* returnedRealpath;
-      if ((returnedRealpath = realpath(filename, _filename)) == 0)
+      char* returned_realpath;
+      if ((returned_realpath = realpath(filename, _filename)) == 0)
 	return errno;
     }
   else
@@ -227,11 +227,11 @@ long openFile(char* filename)
     }
   
   /* Ensure that another frame can be held */
-  prepareFrameBuffer();
+  prepare_frame_buffer();
   
   /* Create new frame */
-  currentFrame = openFrames++;
-  void** frame = (void**)(*(frames + currentFrame) = (void*)malloc(11 * sizeof(void*)));
+  current_frame = open_frames++;
+  void** frame = (void**)(*(frames + current_frame) = (void*)malloc(11 * sizeof(void*)));
   *(frame +  0) = 0;                                    /* Point line           */
   *(frame +  1) = 0;                                    /* Point column         */
   *(frame +  2) = 0;                                    /* Mark line            */
@@ -296,24 +296,24 @@ long openFile(char* filename)
  * @return  >=0       The index of the frame
  * @return  -1        No frame contains the file
  */
-long findFile(char* filename)
+long find_file(char* filename)
 {
-  for (int i = 0; i < openFrames; i++)
+  for (int i = 0; i < open_frames; i++)
     {
       char** frame = (char**)*(frames + i);
-      char* frameFile = *(frame + 7);
-      if (frameFile)
+      char* frame_file = *(frame + 7);
+      if (frame_file)
 	{
 	  /* Check of the frames file matches the wanted file */
 	  char* f = filename;
-	  while ((*frameFile && *f) && (*frameFile == *f))
+	  while ((*frame_file && *f) && (*frame_file == *f))
 	    {
-	      frameFile++;
+	      frame_file++;
 	      f++;
 	    }
 	  
 	  /* Report index of frame if it was match */
-	  if ((*frameFile | *f) == 0)
+	  if ((*frame_file | *f) == 0)
 	    return i;
 	}
     }
@@ -330,7 +330,7 @@ long findFile(char* filename)
  */
 void alert(char* message)
 {
-  char** frame = (char**)*(frames + currentFrame);
+  char** frame = (char**)*(frames + current_frame);
   char* current = *(frame + 8);
   if (current)
     free(current);
@@ -344,9 +344,9 @@ void alert(char* message)
  * @param  row  The line to jump to, negative to keep the current
  * @parma  col  The column to jump to, negative to keep the current position if row is unchanged and beginning otherwise
  */
-void applyJump(long row, long col)
+void apply_jump(long row, long col)
 {
-  long* frame = (long*)*(frames + currentFrame);
+  long* frame = (long*)*(frames + current_frame);
   if (row >= *(frame + 6))
     row = *(frame + 6) - 1;
   char* line = *((char**)*(frame + 9) + (*frame = row));
@@ -362,9 +362,9 @@ void applyJump(long row, long col)
  * 
  * @return  The current row of the point in the current frame
  */
-long getRow()
+long get_row()
 {
-  return *(long*)*(frames + currentFrame);
+  return *(long*)*(frames + current_frame);
 }
 
 
@@ -373,9 +373,9 @@ long getRow()
  * 
  * @return  The current column of the point in the current frame
  */
-long getColumn()
+long get_column()
 {
-  return *((long*)*(frames + currentFrame) + 1);
+  return *((long*)*(frames + current_frame) + 1);
 }
 
 
@@ -384,9 +384,9 @@ long getColumn()
  * 
  * @return  The first visible row in the current frame
  */
-long getFirstRow()
+long get_first_row()
 {
-  return *((long*)*(frames + currentFrame) + 4);
+  return *((long*)*(frames + current_frame) + 4);
 }
 
 
@@ -395,9 +395,9 @@ long getFirstRow()
  * 
  * @return  The first visible column on the current row of the point in the current frame
  */
-long getFirstColumn()
+long get_first_column()
 {
-  return *((long*)*(frames + currentFrame) + 5);
+  return *((long*)*(frames + current_frame) + 5);
 }
 
 
@@ -406,9 +406,9 @@ long getFirstColumn()
  * 
  * @return  The file of the current frame, null if none
  */
-char* getFile()
+char* get_file()
 {
-  return *((char**)*(frames + currentFrame) + 7);
+  return *((char**)*(frames + current_frame) + 7);
 }
 
 
@@ -417,9 +417,9 @@ char* getFile()
  * 
  * @return  The alert of the current frame, null if none
  */
-char* getAlert()
+char* get_alert()
 {
-  return *((char**)*(frames + currentFrame) + 8);
+  return *((char**)*(frames + current_frame) + 8);
 }
 
 
@@ -428,9 +428,9 @@ char* getAlert()
  * 
  * @return  The flags for the current frame
  */
-int getFlags()
+int get_flags()
 {
-  return (int)*((long*)*(frames + currentFrame) + 10);
+  return (int)*((long*)*(frames + current_frame) + 10);
 }
 
 
@@ -439,9 +439,9 @@ int getFlags()
  * 
  * @return  The number of lines in the current frame
  */
-long getLineCount()
+long get_line_count()
 {
-  return *((long*)*(frames + currentFrame) + 6);
+  return *((long*)*(frames + current_frame) + 6);
 }
 
 
@@ -450,9 +450,9 @@ long getLineCount()
  * 
  * @return  The line buffes in the current frame
  */
-char** getLineBuffers()
+char** get_line_buffers()
 {
-  return *((char***)*(frames + currentFrame) + 9);
+  return *((char***)*(frames + current_frame) + 9);
 }
 
 
@@ -462,11 +462,11 @@ char** getLineBuffers()
  * @param   lineBuffer  The line buffer
  * @return              The length of a line
  */
-long getLineLenght(char* lineBuffer)
+long get_line_lenght(char* line_buffer)
 {
   long rc = 0;
   for (int i = 0; i < P; i++)
-    rc = (rc << 8) | (*(lineBuffer + i) & 255);
+    rc = (rc << 8) | (*(line_buffer + i) & 255);
   return rc;
 }
 
@@ -477,9 +477,9 @@ long getLineLenght(char* lineBuffer)
  * @param   lineBuffer  The line buffer
  * @return              The size of a line buffer
  */
-long getLineBufferSize(char* lineBuffer)
+long get_line_buffer_size(char* line_buffer)
 {
-  return getLineLenght(lineBuffer + P);
+  return get_line_lenght(line_buffer + P);
 }
 
 
@@ -489,18 +489,18 @@ long getLineBufferSize(char* lineBuffer)
  * @param   lineBuffer  The line buffer
  * @return              The line content of a line buffer
  */
-char* getLineContent(char* lineBuffer)
+char* get_line_content(char* line_buffer)
 {
-  return lineBuffer + 2 * P;
+  return line_buffer + 2 * P;
 }
 
 
 /**
  * Free all frame resources
  */
-void freeFrames()
+void free_frames()
 {
-  for (long i = 0; i < openFrames; i++)
+  for (long i = 0; i < open_frames; i++)
     {
       void** frame = (void**)*(frames + i);
       long lines = (long)*(frame + 6);
@@ -510,9 +510,9 @@ void freeFrames()
 	free(*(frame + 8));
       if (*(frame + 9))
 	{
-	  char** lineBuffers = (char**)*(frame + 9);
+	  char** line_buffers = (char**)*(frame + 9);
 	  for (long j = 0; j < lines; j++)
-	    free(*(lineBuffers + j));
+	    free(*(line_buffers + j));
 	  free(*(frame + 9));
 	}
       free(frame);

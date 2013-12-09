@@ -28,22 +28,26 @@
  */
 int main(int argc, char** argv)
 {
-  /* Determine the size of the terminal */
   struct winsize win;
-  ioctl(1, TIOCGWINSZ, (char*)&win);
-  int rows = win.ws_row;
-  int cols = win.ws_col;
+  dimm_t rows, cols;
+  struct termios saved_stty;
+  struct termios stty;
+  bool_t file_loaded;
+  int i;
+  
+  /* Determine the size of the terminal */
+  ioctl(STDOUT_FILENO, TIOCGWINSZ, (char*)&win);
+  rows = (dimm_t)(win.ws_row);
+  cols = (dimm_t)(win.ws_col);
   
   /* Check the size of the terminal */
-  if ((rows < 10) || (cols < 20))
+  if ((rows < MINIMUM_ROWS) || (cols < MINIMUM_COLS))
     {
-      printf("You will need at least in 10 rows by 20 columns terminal!");
+      fprintf(stderr, "You will need at least a %i rows by %i columns terminal!\n", MINIMUM_ROWS, MINIMUM_COLS);
       return 1;
     }
   
   /* Disable signals from keystrokes, keystroke echoing and keystroke buffering */
-  struct termios saved_stty;
-  struct termios stty;
   tcgetattr(STDIN_FILENO, &saved_stty);
   tcgetattr(STDIN_FILENO, &stty);
   stty.c_lflag &= ~(ICANON | ECHO | ISIG);
@@ -56,39 +60,38 @@ int main(int argc, char** argv)
   fflush(stdout);
   
   /* Create an empty buffer not yet associeted with a file */
-  createScratch();
+  create_scratch();
   
   /* Load files and apply jumps from the command line */
-  int fileLoaded = 0;
-  for (int i = 1; i < argc; i++)
+  file_loaded = 0;
+  for (i = 1; i < argc; i++)
     if (**(argv + i) != ':')
       {
 	/* Load file */
-	fileLoaded = openFile(*(argv + i));
+	file_loaded = open_file(*(argv + i)) == 0;
       }
-    else if (fileLoaded)
+    else if (file_loaded)
       {
 	/* Jump in last opened file */
-	jump(*(argv + i) + 1); /* TODO this does not work*/
-	fileLoaded = 0;
+	jump(*(argv + i) + 1);
+	file_loaded = 0;
       }
   
   /* Create the screen and start display the files */
-  createScreen(rows, cols);
+  create_screen(rows, cols);
   /* Start interaction */
-  readInput(cols);
+  read_input(cols);
   
-  printf("\033[?2c"      /* Restore cursor to underline, if using TTY */
+  printf("\033[?0c"      /* Restore cursor to default, if using TTY */
 	 "\033[H\033[2J" /* Clear the terminal, useless if in subterminal and not TTY */
-	 "\033[?1049l"   /* Terminate subterminal, if using an xterm */
-	 );
+	 "\033[?1049l"); /* Terminate subterminal, if using an xterm */
   /* Apply the previous instruction */
   fflush(stdout);
   /* Return the terminal to its previous state */
   tcsetattr(STDIN_FILENO, TCSAFLUSH, &saved_stty);
   
   /* Release resources, exit and report success */
-  freeFrames();
+  free_frames();
   return 0;
 }
 
@@ -100,38 +103,42 @@ int main(int argc, char** argv)
  */
 void jump(char* command)
 {
-  int has = 0, state = 1;
-  long row = 0, col = 0;
+  byte_t has = 0, state = 1;
+  pos_t row = 0, col = 0;
+  char c;
+  char* msg;
+  char* msg_;
   
   /* Parse command */
-  char c;
   while ((c = *command++))
-    if (('0' <= c) && (c <= '9'))
+    switch (c)
       {
+      case '0' ... '9':
 	has |= state;
 	if (state == 1)
 	  row = row * 10 - (c & 15);
 	else
 	  col = col * 10 - (c & 15);
-      }
-    else if (c == ':')
-      {
-	if ((++state == 3))
-	  break;
-      }
-    else
-      {
-	state = 3;
 	break;
+	
+      case ':':
+	if ((++state == 3))
+	  goto jump_parse_done;
+	break;
+	
+      default:
+	state = 3;
+	goto jump_parse_done;
       }
+ jump_parse_done:
   
   if (state == 3)
     {
       /* Invalid format */
-      char* msg = (char*)malloc(28 * sizeof(char*));
-      char* _msg = "\033[31mInvalid jump format\033[m";
+      msg = malloc(28 * sizeof(char*));
+      msg_ = "\033[31mInvalid jump format\033[m";
       alert(msg);
-      while ((*msg++ = *_msg++))
+      while ((*msg++ = *msg_++))
 	;
     }
   else
@@ -139,59 +146,65 @@ void jump(char* command)
       /* Apply jump */
       row = (has & 1) ? -row : -1;
       col = (has & 2) ? -col : -1;
-      applyJump(row, col);
+      apply_jump(row, col);
     }
 }
 
 
-void createScreen(int rows, int cols)
+void create_screen(dimm_t rows, dimm_t cols)
 {
+  char* spaces;
+  dimm_t i;
+  char* filename;
+  char* frame_alert;
+  
   /* Create a line of spaces as large as the screen */
-  char* spaces = (char*)malloc((cols + 1) * sizeof(char));
-  for (int i = 0; i < cols; i++)
+  spaces = malloc((cols + 1) * sizeof(char));
+  for (i = 0; i < cols; i++)
     *(spaces + i) = ' ';
   *(spaces + cols) = 0;
   
   /* Create the screen with the current frame, but do not fill it */
-  printf("\033[07m");
-  printf(spaces);
-  printf("\033[1;1H\033[01mZecora  \033[21mPress ESC three times for help");
-  printf("\033[27m");
-  printf("\033[%i;1H\033[07m", rows - 1);
-  printf(spaces);
-  printf("\033[%i;3H(%li,%li)  ", rows - 1, getRow() + 1, getColumn() + 1);
-  if (getFlags() & FLAG_MODIFIED)
+  printf("\033[07m"
+	 "%s"
+	 "\033[1;1H\033[01mZecora  \033[21mPress ESC three times for help"
+	 "\033[27m"
+	 "\033[%i;1H\033[07m"
+	 "%s"
+	 "\033[%i;3H(%li,%li)  ",
+	 spaces, rows - 1, spaces, rows - 1, get_row() + 1, get_column() + 1);
+  
+  if (get_flags() & FLAG_MODIFIED)
     printf("\033[41m");
-  char* filename = getFile();
+  filename = get_file();
   if (filename)
     {
-      long sep = 0;
-      for (long i = 0; *(filename + i); i++)
-	if (*(filename + i) == '/')
-	  sep = i;
+      long sep = 0, j;
+      for (j = 0; *(filename + j); j++)
+	if (*(filename + j) == '/')
+	  sep = j;
       *(filename + sep) = 0;
       printf("%s/\033[01m%s\033[21;27m\n", filename, filename + sep + 1);
       *(filename + sep) = '/';
     }
   else
     printf("\033[01m*scratch*\033[21;27m\n");
-  char* frameAlert = getAlert();
-  if (frameAlert)
-    printf("%s", frameAlert);
+  if ((frame_alert = get_alert()))
+    printf("%s", frame_alert);
   printf("\033[00m\033[2;1H");
   
   /* Fill the screen */
-  long r = getRow();
-  long n = getLineCount(), m = getFirstRow() + rows - 3;
-  char** lines = getLineBuffers();
+  long r = get_row();
+  long n = get_line_count(), m = get_first_row() + rows - 3;
+  char** lines = get_line_buffers();
   n = n < m ? n : m;
   cols--;
-  for (long i = getFirstRow(); i < n; i++)
+  for (long i = get_first_row(); i < n; i++)
     {
-      m = getLineLenght(*(lines + i));
-      long j = i == r ? getFirstColumn() : 0;
+      m = get_line_lenght(*(lines + i));
+      long j = i == r ? get_first_column() : 0;
       m = m < (cols + j) ? m : (cols + j);
-      char* line = getLineContent(*(lines + i));
+      char* line = get_line_content(*(lines + i));
       /* TODO add support for combining diacriticals */
       /* TODO colour comment lines */
       long col = 0;
@@ -237,14 +250,14 @@ void createScreen(int rows, int cols)
   /* TODO ensure that the point is visible */
   
   /* Move the cursor to the position of the point */
-  printf("\033[%li;%liH", getFirstRow() - getRow() + 2, getFirstColumn() - getColumn() + 1);
+  printf("\033[%li;%liH", get_first_row() - get_row() + 2, get_first_column() - get_column() + 1);
   
   /* Flush the screen */
   fflush(stdout);
 }
 
 
-void readInput(int cols)
+void read_input(dimm_t cols)
 {
   getchar();
 }
