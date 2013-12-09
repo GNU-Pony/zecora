@@ -11,7 +11,7 @@ obj/%.o: src/%.c
 
 bin/zecora: obj/frames.o obj/zecora.o
 	@mkdir -p bin
-	$(CC) $(OPTIMISE) -std=$(STD) -Wall -Wextra -pedantic -o $@ $^
+	$(CC) $(OPTIMISE) -std=$(STD) -Wall -Wextra -pedantic -static -o $@ $^
 
 
 .PHONY: clean
