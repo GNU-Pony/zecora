@@ -21,9 +21,13 @@
 
 
 #include <stdlib.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <termios.h>
 #include <sys/ioctl.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <signal.h>
 
 #include "frames.h"
 #include "types.h"
@@ -41,6 +45,13 @@
  */
 #ifndef MINIMUM_ROWS
 #define MINIMUM_ROWS  10
+#endif
+
+
+#ifdef DEBUG
+#  define xfork()  ((pid_t)-1)
+#else
+#  define xfork()  fork()
 #endif
 
 

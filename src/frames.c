@@ -56,13 +56,13 @@ void prepare_frame_buffer()
   {
     /* Prepare to hold 4 frames initially */
     prepared_frames = 4;
-    frames = (void**)malloc(prepared_frames * sizeof(void*));
+    frames = malloc(prepared_frames * sizeof(void*));
   }
   else if (open_frames == prepared_frames)
   {
     /* When full, prepare to hold twice as much */
     prepared_frames <<= 1;
-    void** newFrames = (void**)malloc(prepared_frames * sizeof(void*));
+    void** newFrames = malloc(prepared_frames * sizeof(void*));
     /* Copy old buffer to new buffer */
     for (int i = 0; i < open_frames; i++)
       *(newFrames + i) = *(frames + i);
@@ -83,7 +83,7 @@ void create_scratch()
   
   /* Create new frame */
   current_frame = open_frames++;
-  void** frame = (void**)(*(frames + current_frame) = (void*)malloc(11 * sizeof(void*)));
+  void** frame = (void**)(*(frames + current_frame) = malloc(11 * sizeof(void*)));
   *(frame +  0) = 0;                            /* Point line           */
   *(frame +  1) = 0;                            /* Point column         */
   *(frame +  2) = 0;                            /* Mark line            */
@@ -97,7 +97,7 @@ void create_scratch()
   *(frame + 10) = 0;                            /* Flags                */
   
   /* Create one empty line */
-  char* line0 = *(char**)*(frame + 9) = (char*)malloc(2 * P * sizeof(char)); /* used:P, allocated:P, line:* */
+  char* line0 = *(char**)*(frame + 9) = malloc(2 * P * sizeof(char)); /* used:P, allocated:P, line:* */
   for (int i = 0; i < 2 * P; i++)
     *(line0 + i) = 0;
 }
@@ -140,7 +140,7 @@ long open_file(char* filename)
 	  int namesize = 0;
 	  while (*(filename + namesize++))
 	    ;
-	  char* dirname = (char*)malloc(namesize * sizeof(char));
+	  char* dirname = malloc(namesize * sizeof(char));
 	  for (long i = 0; i < namesize; i++)
 	    *(dirname + i) = *(filename + i);
 	  *(dirname + --namesize) = 0;
@@ -210,7 +210,7 @@ long open_file(char* filename)
   char* _filename = 0;
   if ((buffer))
     {
-      _filename = (char*)malloc(PATH_MAX * sizeof(char));
+      _filename = malloc(PATH_MAX * sizeof(char));
       char* returned_realpath;
       if ((returned_realpath = realpath(filename, _filename)) == 0)
 	return errno;
@@ -221,7 +221,7 @@ long open_file(char* filename)
       long n = 0;
       while (*(filename + n++))
 	;
-      _filename = (char*)malloc(n * sizeof(char));
+      _filename = malloc(n * sizeof(char));
       for (long i = 0; i < n; i++)
 	*(_filename + i) = *(filename + i);
     }
@@ -231,7 +231,7 @@ long open_file(char* filename)
   
   /* Create new frame */
   current_frame = open_frames++;
-  void** frame = (void**)(*(frames + current_frame) = (void*)malloc(11 * sizeof(void*)));
+  void** frame = (void**)(*(frames + current_frame) = malloc(11 * sizeof(void*)));
   *(frame +  0) = 0;                                    /* Point line           */
   *(frame +  1) = 0;                                    /* Point column         */
   *(frame +  2) = 0;                                    /* Mark line            */
@@ -262,7 +262,7 @@ long open_file(char* filename)
 	  bufptr = start;
 	  
 	  /* Create line buffer and fill it with metadata */
-	  char* line = *((char**)*(frame + 9) + i) = (char*)malloc((2 * P + linesize) * sizeof(char)); /* used:P, allocated:P, line:* */
+	  char* line = *((char**)*(frame + 9) + i) = malloc((2 * P + linesize) * sizeof(char)); /* used:P, allocated:P, line:* */
 	  for (int _ = 0; _ < 2; _++)
 	    for (int j = P - 1; j >= 0; j--)
 	      *line++ = (linesize >> (j * 8)) & 255;
@@ -279,7 +279,7 @@ long open_file(char* filename)
   else
     {
       /* No file was actually openned create an empty document */
-      char* line0 = *(char**)*(frame + 9) = (char*)malloc(2 * P * sizeof(char)); /* used:P, allocated:P, line:* */
+      char* line0 = *(char**)*(frame + 9) = malloc(2 * P * sizeof(char)); /* used:P, allocated:P, line:* */
       for (int i = 0; i < 2 * P; i++)
 	*(line0 + i) = 0;
     }

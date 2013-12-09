@@ -33,7 +33,9 @@ int main(int argc, char** argv)
   struct termios saved_stty;
   struct termios stty;
   bool_t file_loaded;
+  pid_t pid;
   int i;
+  int status;
   
   /* Determine the size of the terminal */
   ioctl(STDOUT_FILENO, TIOCGWINSZ, (char*)&win);
@@ -59,28 +61,44 @@ int main(int argc, char** argv)
   /* Apply the previous instruction */
   fflush(stdout);
   
-  /* Create an empty buffer not yet associeted with a file */
-  create_scratch();
-  
-  /* Load files and apply jumps from the command line */
-  file_loaded = 0;
-  for (i = 1; i < argc; i++)
-    if (**(argv + i) != ':')
-      {
-	/* Load file */
-	file_loaded = open_file(*(argv + i)) == 0;
-      }
-    else if (file_loaded)
-      {
-	/* Jump in last opened file */
-	jump(*(argv + i) + 1);
-	file_loaded = 0;
-      }
-  
-  /* Create the screen and start display the files */
-  create_screen(rows, cols);
-  /* Start interaction */
-  read_input(cols);
+  pid = xfork();
+  if (pid && (pid != (pid_t)-1))
+    {
+      /* Parent should waid for fork to ensure that the terminal is properly restored */
+      (void)waitpid(pid, &status, WUNTRACED);
+    }
+  else
+    {
+      /* Create an empty buffer not yet associeted with a file */
+      create_scratch();
+      
+      /* Load files and apply jumps from the command line */
+      file_loaded = 0;
+      for (i = 1; i < argc; i++)
+	if (**(argv + i) != ':')
+	  {
+	    /* Load file */
+	    file_loaded = open_file(*(argv + i)) == 0;
+	  }
+	else if (file_loaded)
+	  {
+	    /* Jump in last opened file */
+	    jump(*(argv + i) + 1);
+	    file_loaded = 0;
+	  }
+      
+      /* Create the screen and start display the files */
+      create_screen(rows, cols);
+      /* Start interaction */
+      read_input(cols);
+      
+      /* Release resources */
+      free_frames();
+      
+      /* Do not continue beyond this point if we managed to fork */
+      if (pid == 0)
+	return 0;
+    }
   
   printf("\033[?0c"      /* Restore cursor to default, if using TTY */
 	 "\033[H\033[2J" /* Clear the terminal, useless if in subterminal and not TTY */
@@ -90,8 +108,15 @@ int main(int argc, char** argv)
   /* Return the terminal to its previous state */
   tcsetattr(STDIN_FILENO, TCSAFLUSH, &saved_stty);
   
-  /* Release resources, exit and report success */
-  free_frames();
+  /* Exit and report successfulness */
+  if (pid && (pid != (pid_t)-1))
+    {
+      if (WIFSIGNALED(status))
+	kill(getpid(), WTERMSIG(status));
+      else
+	return WEXITSTATUS(status);
+      return 1;
+    }
   return 0;
 }
 
