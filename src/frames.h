@@ -49,6 +49,93 @@
 
 
 /**
+ * Frame line buffer information structure
+ */
+struct line_buffer
+{
+  /**
+   * The number of used characters in the line
+   */
+  pos_t used;
+  
+  /**
+   * The number of allocated characters for the line
+   */
+  pos_t allocated;
+  
+  /**
+   * The content of the line
+   */
+  char* line;
+  
+} line_buffer;
+
+
+/**
+ * Frame information structure
+ */
+struct frame
+{
+  /**
+   * The current row of the point in the frame
+   */
+  pos_t row;
+  
+  /**
+   * The current column of the point in the frame, may exceed the number of columns in the active line
+   */
+  pos_t column;
+  
+  /**
+   * The current row of the mark in the frame
+   */
+  pos_t mark_row;
+  
+  /**
+   * The current column of the mark in the frame
+   */
+  pos_t mark_column;
+  
+  /**
+   * The first visible row in the frame
+   */
+  pos_t first_row;
+  
+  /**
+   * The first visible column on the current row of the point in the frame
+   */
+  pos_t first_column;
+  
+  /**
+   * The flags for the frame
+   */
+  int_least8_t flags;
+  
+  /**
+   * The file of the frame, `NULL` if none
+   */
+  char* file;
+  
+  /**
+   * The alert of the frame, `NULL` if none
+   */
+  char* alert;
+  
+  /**
+   * The number of lines in the frame
+   */
+  pos_t line_count;
+  
+  /**
+   * The line buffes in the frame
+   */
+  struct line_buffer* line_buffers;
+  
+} frame;
+
+
+
+/**
  * Prepare the frame buffer to hold one more frame
  */
 void prepare_frame_buffer();
@@ -107,105 +194,6 @@ void alert(char* message);
  * @parma  col  The column to jump to, negative to keep the current position if row is unchanged and beginning otherwise
  */
 void apply_jump(long row, long col);
-
-
-/**
- * Gets the current row of the point in the current frame
- * 
- * @return  The current row of the point in the current frame
- */
-long get_row();
-
-
-/**
- * Gets the current column of the point in the current frame
- * 
- * @return  The current column of the point in the current frame
- */
-long get_column();
-
-
-/**
- * Gets the first visible row in the current frame
- * 
- * @return  The first visible row in the current frame
- */
-long get_first_row();
-
-
-/**
- * Gets the first visible column on the current row of the point in the current frame
- * 
- * @return  The first visible column on the current row of the point in the current frame
- */
-long get_first_column();
-
-
-/**
- * Gets the file of the current frame
- * 
- * @return  The file of the current frame, null if none
- */
-char* get_file();
-
-
-/**
- * Gets the alert of the current frame
- * 
- * @return  The alert of the current frame, null if none
- */
-char* get_alert();
-
-
-/**
- * Gets the flags for the current frame
- * 
- * @return  The flags for the current frame
- */
-int get_flags();
-
-
-/**
- * Gets the number of lines in the current frame
- * 
- * @return  The number of lines in the current frame
- */
-long get_line_count();
-
-
-/**
- * Gets the line buffes in the current frame
- * 
- * @return  The line buffes in the current frame
- */
-char** get_line_buffers();
-
-
-/**
- * Gets the length of a line
- * 
- * @param   lineBuffer  The line buffer
- * @return              The length of a line
- */
-long get_line_lenght(char* lineBuffer);
-
-
-/**
- * Gets the size of a line buffer
- * 
- * @param   lineBuffer  The line buffer
- * @return              The size of a line buffer
- */
-long get_line_buffer_size(char* lineBuffer);
-
-
-/**
- * Gets the line content of a line buffer
- * 
- * @param   lineBuffer  The line buffer
- * @return              The line content of a line buffer
- */
-char* get_line_content(char* lineBuffer);
 
 
 /**

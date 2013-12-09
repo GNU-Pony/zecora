@@ -20,6 +20,13 @@
 
 
 /**
+ * The currently active frame
+ */
+extern struct frame* cur_frame;
+
+
+
+/**
  * This is the mane entry point of Zecora
  * 
  * @param   argc  The number of elements in `argv`
@@ -169,8 +176,8 @@ void jump(char* command)
   else
     {
       /* Apply jump */
-      row = (has & 1) ? -row : -1;
-      col = (has & 2) ? -col : -1;
+      row = (has & 1) ? -(row + 1) : -1;
+      col = (has & 2) ? -(col + 1) : -1;
       apply_jump(row, col);
     }
 }
@@ -181,7 +188,6 @@ void create_screen(dimm_t rows, dimm_t cols)
   char* spaces;
   dimm_t i;
   char* filename;
-  char* frame_alert;
   
   /* Create a line of spaces as large as the screen */
   spaces = malloc((cols + 1) * sizeof(char));
@@ -197,11 +203,11 @@ void create_screen(dimm_t rows, dimm_t cols)
 	 "\033[%i;1H\033[07m"
 	 "%s"
 	 "\033[%i;3H(%li,%li)  ",
-	 spaces, rows - 1, spaces, rows - 1, get_row() + 1, get_column() + 1);
+	 spaces, rows - 1, spaces, rows - 1, cur_frame->row + 1, cur_frame->column + 1);
   
-  if (get_flags() & FLAG_MODIFIED)
+  if (cur_frame->flags & FLAG_MODIFIED)
     printf("\033[41m");
-  filename = get_file();
+  filename = cur_frame->file;
   if (filename)
     {
       long sep = 0, j;
@@ -214,22 +220,22 @@ void create_screen(dimm_t rows, dimm_t cols)
     }
   else
     printf("\033[01m*scratch*\033[21;27m\n");
-  if ((frame_alert = get_alert()))
-    printf("%s", frame_alert);
+  if (cur_frame->alert)
+    printf("%s", cur_frame->alert);
   printf("\033[00m\033[2;1H");
   
   /* Fill the screen */
-  long r = get_row();
-  long n = get_line_count(), m = get_first_row() + rows - 3;
-  char** lines = get_line_buffers();
+  long r = cur_frame->row;
+  long n = cur_frame->line_count, m = cur_frame->first_row + rows - 3;
+  struct line_buffer* lines = cur_frame->line_buffers;
   n = n < m ? n : m;
   cols--;
-  for (long i = get_first_row(); i < n; i++)
+  for (long i = cur_frame->first_row; i < n; i++)
     {
-      m = get_line_lenght(*(lines + i));
-      long j = i == r ? get_first_column() : 0;
+      m = (lines + i)->used;
+      long j = i == r ? cur_frame->first_column : 0;
       m = m < (cols + j) ? m : (cols + j);
-      char* line = get_line_content(*(lines + i));
+      char* line = (lines + i)->line;
       /* TODO add support for combining diacriticals */
       /* TODO colour comment lines */
       long col = 0;
@@ -275,7 +281,7 @@ void create_screen(dimm_t rows, dimm_t cols)
   /* TODO ensure that the point is visible */
   
   /* Move the cursor to the position of the point */
-  printf("\033[%li;%liH", get_first_row() - get_row() + 2, get_first_column() - get_column() + 1);
+  printf("\033[%li;%liH", cur_frame->row - cur_frame->first_row + 2, cur_frame->column - cur_frame->first_column + 1);
   
   /* Flush the screen */
   fflush(stdout);

@@ -24,7 +24,7 @@
 
 
 typedef unsigned short int  dimm_t;
-typedef int_least64_t       pos_t;
+typedef long                pos_t;
 typedef int_least8_t        bool_t;
 typedef int_least8_t        byte_t;
 
