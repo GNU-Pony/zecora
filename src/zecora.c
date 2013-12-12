@@ -204,6 +204,21 @@ static void create_screen(dimm_t rows, dimm_t cols)
     *(spaces + i) = ' ';
   *(spaces + cols) = 0;
   
+  /* Ensure that the point is visible */
+  pos_t point_row = cur_frame->row;
+  pos_t point_col = cur_frame->column;
+  pos_t point_cols = cur_frame->line_buffers[point_row].used;
+  if (point_col > point_cols)
+    point_col = point_cols;
+  if (point_row < cur_frame->first_row)
+    cur_frame->first_row = point_row;
+  else if (point_row >= cur_frame->first_row + rows - 3)
+    cur_frame->first_row = point_row;
+  if (point_col < cur_frame->first_column)
+    cur_frame->first_column = point_col;
+  else if (point_col >= cur_frame->first_column + cols)
+    cur_frame->first_column = point_col;
+  
   /* Create the screen with the current frame, but do not fill it */
   printf("\033[07m"
 	 "%s"
@@ -212,7 +227,7 @@ static void create_screen(dimm_t rows, dimm_t cols)
 	 "\033[%i;1H\033[07m"
 	 "%s"
 	 "\033[%i;3H(%li,%li)  ",
-	 spaces, rows - 1, spaces, rows - 1, cur_frame->row + 1, cur_frame->column + 1);
+	 spaces, rows - 1, spaces, rows - 1, cur_frame->row + 1, point_col + 1);
   
   if (cur_frame->flags & FLAG_MODIFIED)
     printf("\033[41m");
@@ -300,14 +315,7 @@ static void create_screen(dimm_t rows, dimm_t cols)
     }
   cols++;
   
-  /* TODO ensure that the point is visible */
-  
   /* Move the cursor to the position of the point */
-  pos_t point_row = cur_frame->row;
-  pos_t point_col = cur_frame->column;
-  pos_t point_cols = cur_frame->line_buffers[point_row].used;
-  if (point_col > point_cols)
-    point_col = point_cols;
   printf("\033[%li;%liH", point_row - cur_frame->first_row + 2, point_col - cur_frame->first_column + 1);
   
   /* Flush the screen */
