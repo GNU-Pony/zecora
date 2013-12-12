@@ -130,7 +130,7 @@ long open_file(char* filename)
   if (stat(filename, &file_stats))
     {
       int error = errno;
-      if ((error == ENOENT) && (*filename != 0))
+      if ((error == ENOENT) && (*filename != NULL))
 	{
 	  int namesize = 0;
 	  while (*(filename + namesize++))
@@ -148,7 +148,7 @@ long open_file(char* filename)
 	    error = file_exists = 0;
 	  free(dirname);
 	}
-      if (error != 0)
+      if (error)
 	return error;
     }
   else if (S_ISREG(file_stats.st_mode) == 0)
@@ -206,8 +206,7 @@ long open_file(char* filename)
   if (buffer)
     {
       _filename = malloc(PATH_MAX * sizeof(char));
-      char* returned_realpath;
-      if ((returned_realpath = realpath(filename, _filename)) == 0)
+      if (realpath(filename, _filename) == NULL)
 	return errno;
     }
   else
