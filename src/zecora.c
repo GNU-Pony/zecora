@@ -303,7 +303,12 @@ static void create_screen(dimm_t rows, dimm_t cols)
   /* TODO ensure that the point is visible */
   
   /* Move the cursor to the position of the point */
-  printf("\033[%li;%liH", cur_frame->row - cur_frame->first_row + 2, cur_frame->column - cur_frame->first_column + 1);
+  pos_t point_row = cur_frame->row;
+  pos_t point_col = cur_frame->column;
+  pos_t point_cols = cur_frame->line_buffers[point_row].used;
+  if (point_col > point_cols)
+    point_col = point_cols;
+  printf("\033[%li;%liH", point_row - cur_frame->first_row + 2, point_col - cur_frame->first_column + 1);
   
   /* Flush the screen */
   fflush(stdout);
