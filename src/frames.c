@@ -94,7 +94,7 @@ void create_scratch()
   /* Create one empty line */
   cur_frame->line_buffers->used = 0;
   cur_frame->line_buffers->allocated = 16;
-  cur_frame->line_buffers->line = malloc(16 * sizeof(char));
+  cur_frame->line_buffers->line = malloc(16 * sizeof(char_t));
 }
 
 
@@ -130,7 +130,7 @@ long open_file(char* filename)
   if (stat(filename, &file_stats))
     {
       int error = errno;
-      if ((error == ENOENT) && (*filename != NULL))
+      if ((error == ENOENT) && *filename)
 	{
 	  int namesize = 0;
 	  while (*(filename + namesize++))
@@ -160,7 +160,7 @@ long open_file(char* filename)
   unsigned long size = 0;
   unsigned long reported_size = file_stats.st_size;
   /* Buffer for the content file */
-  char* buffer = file_exists ? malloc(reported_size) : NULL;
+  int8_t* buffer = file_exists ? malloc(reported_size * sizeof(int8_t)) : NULL;
   
   /* Read file */
   size_t got;
@@ -242,7 +242,7 @@ long open_file(char* filename)
       struct line_buffer* lbuf = cur_frame->line_buffers + i;
       lbuf->used = 0;
       lbuf->allocated = 4;
-      lbuf->line = malloc(4 * sizeof(char));
+      lbuf->line = malloc(4 * sizeof(char_t));
     }
   
   if (buffer)
@@ -253,27 +253,47 @@ long open_file(char* filename)
 	{
 	  /* Get the span of the line */
 	  long start = bufptr;
+	  long chars = 0;
 	  while ((unsigned long)bufptr < size)
-	    {
-	      if (*(buffer + bufptr) == '\n')
-		break;
-	      bufptr++;
-	    }
+	    if (*(buffer + bufptr) == '\n')
+	      break;
+	    else
+	      if ((*(buffer + bufptr++) & 0xC0) != 0x80)
+		chars++;
 	  long linesize = bufptr - start;
 	  bufptr = start;
 	  
 	  /* Create line buffer and fill it with metadata */
 	  struct line_buffer* lbuf = cur_frame->line_buffers + i;
-	  lbuf->used = linesize;
+	  lbuf->used = chars;
 	  if (lbuf->allocated < lbuf->used)
 	    {
 	      lbuf->allocated = lbuf->used;
-	      lbuf->line = realloc(lbuf->line, lbuf->allocated * sizeof(char));
+	      lbuf->line = realloc(lbuf->line, lbuf->allocated * sizeof(char_t));
 	    }
 	  
 	  /* Fill the line with the data */
-	  for (long j = 0; j < linesize; j++)
-	    *(lbuf->line + j) = *(buffer + bufptr++);
+	  for (long j = 0, k = -1; j < linesize; j++)
+	    {
+	      int8_t c = *(buffer + bufptr++);
+	      if ((c & 0xC0) != 0x80)
+		{
+		  int8_t n = 0;
+		  while (c & 0x80)
+		    {
+		      n++;
+		      c <<= 1;
+		    }
+		  *(lbuf->line + ++k) = c >> n;
+		}
+	      else
+		{
+		  if (k < 0)
+		    k = 0;
+		  *(lbuf->line + k) <<= 6;
+		  *(lbuf->line + k) |= c & 0x4F;
+		}
+	    }
 	  
 	  /* Jump over the \n at the end of the line so the following lines does not appear to be empty */
 	  bufptr++;

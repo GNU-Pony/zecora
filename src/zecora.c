@@ -44,17 +44,26 @@ int main(int argc, char** argv)
   int i;
   int status;
   
-  /* Determine the size of the terminal */
-  ioctl(STDOUT_FILENO, TIOCGWINSZ, (char*)&win);
-  rows = (dimm_t)(win.ws_row);
-  cols = (dimm_t)(win.ws_col);
-  
-  /* Check the size of the terminal */
-  if ((rows < MINIMUM_ROWS) || (cols < MINIMUM_COLS))
+#ifdef DEBUG
+  rows = MINIMUM_ROWS;
+  cols = MINIMUM_COLS;
+  if (ttyname(STDOUT_FILENO) != NULL)
     {
-      fprintf(stderr, "You will need at least a %i rows by %i columns terminal!\n", MINIMUM_ROWS, MINIMUM_COLS);
-      return 1;
+#endif
+      /* Determine the size of the terminal */
+      ioctl(STDOUT_FILENO, TIOCGWINSZ, (char*)&win);
+      rows = (dimm_t)(win.ws_row);
+      cols = (dimm_t)(win.ws_col);
+      
+      /* Check the size of the terminal */
+      if ((rows < MINIMUM_ROWS) || (cols < MINIMUM_COLS))
+	{
+	  fprintf(stderr, "You will need at least a %i rows by %i columns terminal!\n", MINIMUM_ROWS, MINIMUM_COLS);
+	  return 1;
+	}
+#ifdef DEBUG
     }
+#endif
   
   /* Disable signals from keystrokes, keystroke echoing and keystroke buffering */
   tcgetattr(STDIN_FILENO, &saved_stty);
@@ -190,7 +199,7 @@ static void create_screen(dimm_t rows, dimm_t cols)
   char* filename;
   
   /* Create a line of spaces as large as the screen */
-  spaces = malloc((cols + 1) * sizeof(char));
+  spaces = alloca((cols + 1) * sizeof(char));
   for (i = 0; i < cols; i++)
     *(spaces + i) = ' ';
   *(spaces + cols) = 0;
@@ -230,27 +239,21 @@ static void create_screen(dimm_t rows, dimm_t cols)
   struct line_buffer* lines = cur_frame->line_buffers;
   n = n < m ? n : m;
   cols--;
+  static char ucs_decode_buffer[8];
+  *(ucs_decode_buffer + 7) = 0;
   for (long i = cur_frame->first_row; i < n; i++)
     {
       m = (lines + i)->used;
       long j = i == r ? cur_frame->first_column : 0;
       m = m < (cols + j) ? m : (cols + j);
-      char* line = (lines + i)->line;
+      char_t* line = (lines + i)->line;
       /* TODO add support for combining diacriticals */
       /* TODO colour comment lines */
       long col = 0;
-      for (; (j <= m) && (col < cols); j++)
+      for (; (j < m) && (col < cols); j++)
 	{
-	  char c = *(line + j);
-	  if (j == m)
-	    if ((c & 0xC0) == 0x80)
-	      {
-		printf("%c", c);
-		m++;
-	      }
-	    else
-	      break;
-	  else if (c == '\t')
+	  char_t c = *(line + j);
+	  if (c == (char_t)'\t')
 	    {
 	      printf(" ");
 	      col++;
@@ -259,19 +262,38 @@ static void create_screen(dimm_t rows, dimm_t cols)
 		  printf(" ");
 		  col++;
 		}
+	      continue;
 	    }
-	  else if ((0 <= c) && (c < ' '))
-	    {
-	      printf("\033[32m%c\033[39m", c);
-	      col++;
-	    }
+	  col++;
+	  if ((c & 0x7FFFFFFF) != c) /* should never happend: invalid ucs value */
+	    printf("\033[41m.\033[00m");
+	  else if ((0 <= c) && (c < (char_t)' '))
+	    printf("\033[31m%c\033[00m", '@' + c);
+	  else if (c == 0x2011) /* non-breaking hyphen */
+	    printf("\033[35m-\033[00m");
+	  else if (c == 0x2010) /* hyphen */
+	    printf("\033[34m-\033[00m");
+	  else if (c == 0x00A0) /* no-breaking space */
+	    printf("\033[45m \033[00m");
+	  else if (c == 0x00AD) /* soft hyphen */
+	    printf("\033[31m-\033[00m");
+	  else if (c < 0x80)
+	    printf("%c", c);
 	  else
 	    {
-	      printf("%c", c);
-	      if ((c & 0xC0) == 0x80)
-		m++;
+	      long off = 7;
+	      *ucs_decode_buffer = (int8_t)0x80;
+	      while (c)
+		{
+		  *(ucs_decode_buffer + --off) = (c & 0x4F) | 0x80;
+		  *ucs_decode_buffer |= (*ucs_decode_buffer) >> 1;
+		  c >>= 6;
+		}
+	      if ((*ucs_decode_buffer) & *(ucs_decode_buffer + off))
+		*(ucs_decode_buffer + --off) = (*ucs_decode_buffer) << 1;
 	      else
-		col++;
+		*(ucs_decode_buffer + off) |= (*ucs_decode_buffer) << 1;
+	      printf("%s", ucs_decode_buffer + off);
 	    }
 	}
       printf("\033[00m\n");

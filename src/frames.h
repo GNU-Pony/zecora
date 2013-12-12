@@ -66,7 +66,7 @@ struct line_buffer
   /**
    * The content of the line
    */
-  char* line;
+  char_t* line;
   
 } line_buffer;
 

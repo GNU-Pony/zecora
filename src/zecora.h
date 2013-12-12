@@ -52,6 +52,7 @@
 #  define xfork()  ((pid_t)-1)
 #else
 #  define xfork()  fork()
+#  error fail
 #endif
 
 
