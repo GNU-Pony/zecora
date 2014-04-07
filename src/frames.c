@@ -236,7 +236,7 @@ long open_file(char* filename)
   cur_frame->file = _filename;
   cur_frame->alert = NULL;
   cur_frame->line_count = lines;
-  cur_frame->line_buffers = malloc(lines * sizeof(struct line_buffer));
+  cur_frame->line_buffers = malloc((size_t)lines * sizeof(struct line_buffer));
   for (pos_t i = 0; i < lines; i++)
     {
       struct line_buffer* lbuf = cur_frame->line_buffers + i;
@@ -248,11 +248,11 @@ long open_file(char* filename)
   if (buffer)
     {
       /* Populate lines */
-      pos_t bufptr = 0;
+      size_t bufptr = 0;
       for (pos_t i = 0; i < lines; i++)
 	{
 	  /* Get the span of the line */
-	  pos_t start = bufptr;
+	  size_t start = bufptr;
 	  pos_t chars = 0;
 	  while (bufptr < size)
 	    if (*(buffer + bufptr) == '\n')
@@ -269,7 +269,7 @@ long open_file(char* filename)
 	  if (lbuf->allocated < lbuf->used)
 	    {
 	      lbuf->allocated = lbuf->used;
-	      lbuf->line = realloc(lbuf->line, lbuf->allocated * sizeof(char_t));
+	      lbuf->line = realloc(lbuf->line, (size_t)(lbuf->allocated) * sizeof(char_t));
 	    }
 	  
 	  /* Fill the line with the data */
