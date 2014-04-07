@@ -132,7 +132,7 @@ long open_file(char* filename)
       int error = errno;
       if ((error == ENOENT) && *filename)
 	{
-	  int namesize = 0;
+	  size_t namesize = 0;
 	  while (*(filename + namesize++))
 	    ;
 	  char* dirname = malloc(namesize * sizeof(char));
@@ -224,7 +224,7 @@ long open_file(char* filename)
   prepare_frame_buffer();
   
   /* Create new frame */
-  current_frame = open_frames++;
+  current_frame = (ssize_t)(open_frames++);
   cur_frame = frames + current_frame;
   cur_frame->row = 0;
   cur_frame->column = 0;

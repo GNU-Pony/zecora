@@ -249,8 +249,8 @@ static void create_screen(dimm_t rows, dimm_t cols)
   printf("\033[00m\033[2;1H");
   
   /* Fill the screen */
-  long r = cur_frame->row;
-  long n = cur_frame->line_count, m = cur_frame->first_row + rows - 3;
+  size_t r = cur_frame->row;
+  size_t n = cur_frame->line_count, m = cur_frame->first_row + rows - 3;
   struct line_buffer* lines = cur_frame->line_buffers;
   n = n < m ? n : m;
   cols--;
@@ -259,7 +259,7 @@ static void create_screen(dimm_t rows, dimm_t cols)
   for (size_t i = cur_frame->first_row; i < n; i++)
     {
       m = (lines + i)->used;
-      long j = i == r ? cur_frame->first_column : 0;
+      size_t j = i == r ? cur_frame->first_column : 0;
       m = m < (cols + j) ? m : (cols + j);
       char_t* line = (lines + i)->line;
       /* TODO add support for combining diacriticals */
