@@ -256,7 +256,7 @@ static void create_screen(dimm_t rows, dimm_t cols)
   cols--;
   static char ucs_decode_buffer[8];
   *(ucs_decode_buffer + 7) = 0;
-  for (size_t i = cur_frame->first_row; i < n; i++)
+  for (i = cur_frame->first_row; i < n; i++)
     {
       m = (lines + i)->used;
       size_t j = i == r ? cur_frame->first_column : 0;

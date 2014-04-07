@@ -49,7 +49,7 @@ struct frame* cur_frame = NULL;
 /**
  * Prepare the frame buffer to hold one more frame
  */
-void prepare_frame_buffer()
+void prepare_frame_buffer(void)
 {
   if (frames == NULL)
   {
@@ -69,7 +69,7 @@ void prepare_frame_buffer()
 /**
  * Create an empty document that is not yet associated with a file
  */
-void create_scratch()
+void create_scratch(void)
 {
   /* Ensure that another frame can be held */
   prepare_frame_buffer();
@@ -136,7 +136,7 @@ long open_file(char* filename)
 	  while (*(filename + namesize++))
 	    ;
 	  char* dirname = malloc(namesize * sizeof(char));
-	  for (long i = 0; i < namesize; i++)
+	  for (size_t i = 0; i < namesize; i++)
 	    *(dirname + i) = *(filename + i);
 	  *(dirname + --namesize) = 0;
 	  while (namesize && (*(dirname + --namesize) == '/'))
@@ -157,8 +157,8 @@ long open_file(char* filename)
   /* Get the optimal reading block size */
   size_t block_size = file_exists ? (size_t)(file_stats.st_blksize) : 0;
   /* Get the size of the file */
-  unsigned long size = 0;
-  unsigned long reported_size = file_stats.st_size;
+  size_t size = 0;
+  size_t reported_size = file_stats.st_size;
   /* Buffer for the content file */
   int8_t* buffer = file_exists ? malloc(reported_size * sizeof(int8_t)) : NULL;
   
@@ -377,7 +377,7 @@ void apply_jump(long row, long col)
 /**
  * Free all frame resources
  */
-void free_frames()
+void free_frames(void)
 {
   size_t i;
   pos_t j, n;

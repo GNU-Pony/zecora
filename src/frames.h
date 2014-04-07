@@ -138,13 +138,13 @@ struct frame
 /**
  * Prepare the frame buffer to hold one more frame
  */
-void prepare_frame_buffer();
+void prepare_frame_buffer(void);
 
 
 /**
  * Create an empty document that is not yet associated with a file
  */
-void create_scratch();
+void create_scratch(void);
 
 
 /**
@@ -199,7 +199,7 @@ void apply_jump(long row, long col);
 /**
  * Free all frame resources
  */
-void free_frames();
+void free_frames(void);
 
 
 #endif
