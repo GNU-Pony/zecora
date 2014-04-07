@@ -235,7 +235,7 @@ long open_file(char* filename)
   cur_frame->flags = 0;
   cur_frame->file = _filename;
   cur_frame->alert = NULL;
-  cur_frame->line_count = lines;
+  cur_frame->line_count = (ssize_t)lines;
   cur_frame->line_buffers = malloc(lines * sizeof(struct line_buffer));
   for (size_t i = 0; i < lines; i++)
     {
@@ -248,19 +248,19 @@ long open_file(char* filename)
   if (buffer)
     {
       /* Populate lines */
-      long bufptr = 0;
+      size_t bufptr = 0;
       for (size_t i = 0; i < lines; i++)
 	{
 	  /* Get the span of the line */
-	  long start = bufptr;
-	  long chars = 0;
+	  size_t start = bufptr;
+	  size_t chars = 0;
 	  while ((unsigned long)bufptr < size)
 	    if (*(buffer + bufptr) == '\n')
 	      break;
 	    else
 	      if ((*(buffer + bufptr++) & 0xC0) != 0x80)
 		chars++;
-	  long linesize = bufptr - start;
+	  ssize_t linesize = (ssize_t)(bufptr - start);
 	  bufptr = start;
 	  
 	  /* Create line buffer and fill it with metadata */
@@ -273,7 +273,7 @@ long open_file(char* filename)
 	    }
 	  
 	  /* Fill the line with the data */
-	  for (long j = 0, k = -1; j < linesize; j++)
+	  for (ssize_t j = 0, k = -1; j < linesize; j++)
 	    {
 	      int8_t c = *(buffer + bufptr++);
 	      if ((c & 0xC0) != 0x80)
@@ -317,7 +317,7 @@ long open_file(char* filename)
  * @return  >=0       The index of the frame
  * @return  -1        No frame contains the file
  */
-long find_file(char* filename)
+ssize_t find_file(char* filename)
 {
   char* f;
   char* ff;
@@ -334,7 +334,7 @@ long find_file(char* filename)
 	
 	/* Report index of frame if it was match */
 	if ((*ff | *f) == 0)
-	  return i;
+	  return (ssize_t)i;
       }
   
   /* No frame contains the file */

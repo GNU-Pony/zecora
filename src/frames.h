@@ -56,12 +56,12 @@ struct line_buffer
   /**
    * The number of used characters in the line
    */
-  pos_t used;
+  size_t used;
   
   /**
    * The number of allocated characters for the line
    */
-  pos_t allocated;
+  size_t allocated;
   
   /**
    * The content of the line
@@ -176,7 +176,7 @@ long open_file(char* filename);
  * @return  >=0       The index of the frame
  * @return  -1        No frame contains the file
  */
-long find_file(char* filename);
+ssize_t find_file(char* filename);
 
 
 /**
