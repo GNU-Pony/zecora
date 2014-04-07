@@ -199,7 +199,7 @@ static void create_screen(pos_t rows, pos_t cols)
   char* filename;
   
   /* Create a line of spaces as large as the screen */
-  spaces = alloca((cols + 1) * sizeof(char));
+  spaces = alloca((size_t)(cols + 1) * sizeof(char));
   for (i = 0; i < cols; i++)
     *(spaces + i) = ' ';
   *(spaces + cols) = 0;
@@ -224,9 +224,9 @@ static void create_screen(pos_t rows, pos_t cols)
 	 "%s"
 	 "\033[1;1H\033[01mZecora  \033[21mPress ESC three times for help"
 	 "\033[27m"
-	 "\033[%i;1H\033[07m"
+	 "\033[%li;1H\033[07m"
 	 "%s"
-	 "\033[%i;3H(%li,%li)  ",
+	 "\033[%li;3H(%li,%li)  ",
 	 spaces, rows - 1, spaces, rows - 1, cur_frame->row + 1, point_col + 1);
   
   if (cur_frame->flags & FLAG_MODIFIED)
