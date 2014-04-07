@@ -23,7 +23,6 @@
 #include <inttypes.h>
 
 
-typedef size_t         dimm_t;
 typedef ssize_t        pos_t;
 typedef int_least8_t   bool_t;
 typedef int_least8_t   byte_t;

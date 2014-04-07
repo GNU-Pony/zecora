@@ -36,7 +36,7 @@ extern struct frame* cur_frame;
 int main(int argc, char** argv)
 {
   struct winsize win;
-  dimm_t rows, cols;
+  size_t rows, cols;
   struct termios saved_stty;
   struct termios stty;
   bool_t file_loaded;
@@ -52,8 +52,8 @@ int main(int argc, char** argv)
 #endif
       /* Determine the size of the terminal */
       ioctl(STDOUT_FILENO, TIOCGWINSZ, (char*)&win);
-      rows = (dimm_t)(win.ws_row);
-      cols = (dimm_t)(win.ws_col);
+      rows = (size_t)(win.ws_row);
+      cols = (size_t)(win.ws_col);
       
       /* Check the size of the terminal */
       if ((rows < MINIMUM_ROWS) || (cols < MINIMUM_COLS))
@@ -192,10 +192,10 @@ static void jump(char* command)
 }
 
 
-static void create_screen(dimm_t rows, dimm_t cols)
+static void create_screen(size_t rows, size_t cols)
 {
   char* spaces;
-  dimm_t i;
+  size_t i;
   char* filename;
   
   /* Create a line of spaces as large as the screen */
@@ -207,9 +207,9 @@ static void create_screen(dimm_t rows, dimm_t cols)
   /* Ensure that the point is visible */
   pos_t point_row = cur_frame->row;
   pos_t point_col = cur_frame->column;
-  pos_t point_cols = cur_frame->line_buffers[point_row].used;
-  if (point_col > point_cols)
-    point_col = point_cols;
+  size_t point_cols = cur_frame->line_buffers[point_row].used;
+  if (point_col > (pos_t)point_cols)
+    point_col = (pos_t)point_cols;
   if (point_row < cur_frame->first_row)
     cur_frame->first_row = point_row;
   else if (point_row >= cur_frame->first_row + rows - 3)
@@ -323,7 +323,7 @@ static void create_screen(dimm_t rows, dimm_t cols)
 }
 
 
-static void read_input(dimm_t cols)
+static void read_input(size_t cols)
 {
   getchar();
 }
