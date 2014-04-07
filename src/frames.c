@@ -22,17 +22,17 @@
 /**
  * The number of opened frames
  */
-static long open_frames = 0;
+static size_t open_frames = 0;
 
 /**
  * The number of frames that fits in `frames`
  */
-static long prepared_frames = 0;
+static size_t prepared_frames = 0;
 
 /**
  * The index of the current frame
  */
-static long current_frame = -1;
+static ssize_t current_frame = -1;
 
 /**
  * The opened frames
@@ -75,7 +75,7 @@ void create_scratch()
   prepare_frame_buffer();
   
   /* Create new frame */
-  current_frame = open_frames++;
+  current_frame = (ssize_t)(open_frames++);
   cur_frame = frames + current_frame;
   
   /* Initialise frame */
@@ -321,7 +321,7 @@ long find_file(char* filename)
 {
   char* f;
   char* ff;
-  for (int i = 0; i < open_frames; i++)
+  for (size_t i = 0; i < open_frames; i++)
     if ((ff = (frames + i)->file))
       {
 	/* Check of the frames file matches the wanted file */
@@ -379,7 +379,7 @@ void apply_jump(long row, long col)
  */
 void free_frames()
 {
-  long i;
+  size_t i;
   pos_t j, n;
   char* buf;
   

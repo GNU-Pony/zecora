@@ -68,7 +68,7 @@ int main(int argc, char** argv)
   /* Disable signals from keystrokes, keystroke echoing and keystroke buffering */
   tcgetattr(STDIN_FILENO, &saved_stty);
   tcgetattr(STDIN_FILENO, &stty);
-  stty.c_lflag &= ~(ICANON | ECHO | ISIG);
+  stty.c_lflag &= (tcflag_t)~(ICANON | ECHO | ISIG);
   tcsetattr(STDIN_FILENO, TCSAFLUSH, &stty);
   
   printf("\033[?1049h"   /* Initialise subterminal, if using an xterm */
@@ -256,7 +256,7 @@ static void create_screen(dimm_t rows, dimm_t cols)
   cols--;
   static char ucs_decode_buffer[8];
   *(ucs_decode_buffer + 7) = 0;
-  for (long i = cur_frame->first_row; i < n; i++)
+  for (size_t i = cur_frame->first_row; i < n; i++)
     {
       m = (lines + i)->used;
       long j = i == r ? cur_frame->first_column : 0;

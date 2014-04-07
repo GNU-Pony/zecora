@@ -13,12 +13,14 @@ USE_UPX = yes
 STATIC = -static -fwhole-program
 endif
 STD = gnu11
-WARN = -Wall -Wextra -pedantic -Wdouble-promotion -Wformat=2 -Winit-self -Wmissing-include-dirs \
+WARN = -Wall -Wextra -Wdouble-promotion -Wformat=2 -Winit-self -Wmissing-include-dirs \
        -Wfloat-equal -Wmissing-prototypes -Wmissing-declarations -Wtrampolines -Wnested-externs \
-       -Wno-variadic-macros -Wdeclaration-after-statement -Wundef -Wpacked -Wunsafe-loop-optimizations \
+       -Wno-variadic-macros -Wundef -Wpacked -Wunsafe-loop-optimizations \
        -Wbad-function-cast -Wwrite-strings -Wlogical-op -Wstrict-prototypes -Wold-style-definition \
        -Wvector-operation-performance -Wstack-protector -Wunsuffixed-float-constants -Wcast-align \
        -Wsync-nand -Wshadow -Wredundant-decls -Winline -Wcast-qual -Wsign-conversion -Wstrict-overflow
+# Not used:
+#  -pedantic -Wdeclaration-after-statement
 X = 
 
 FLAGS = $(OPTIMISE) -std=$(STD) $(WARN) $(X) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS)
