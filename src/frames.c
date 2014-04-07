@@ -158,7 +158,7 @@ long open_file(char* filename)
   size_t block_size = file_exists ? (size_t)(file_stats.st_blksize) : 0;
   /* Get the size of the file */
   size_t size = 0;
-  size_t reported_size = file_stats.st_size;
+  size_t reported_size = (size_t)(file_stats.st_size);
   /* Buffer for the content file */
   int8_t* buffer = file_exists ? malloc(reported_size * sizeof(int8_t)) : NULL;
   
@@ -195,9 +195,9 @@ long open_file(char* filename)
     }
   
   /* Count the number of lines */
-  long lines = 1;
+  size_t lines = 1;
   if (buffer)
-    for (unsigned long i = 0; i < size; i++)
+    for (size_t i = 0; i < size; i++)
       if (*(buffer + i) == '\n')
 	lines++;
   
@@ -212,11 +212,11 @@ long open_file(char* filename)
   else
     {
       /* TODO get the realpath for the directroy */
-      long n = 0;
+      size_t n = 0;
       while (*(filename + n++))
 	;
       _filename = malloc(n * sizeof(char));
-      for (long i = 0; i < n; i++)
+      for (size_t i = 0; i < n; i++)
 	*(_filename + i) = *(filename + i);
     }
   
@@ -237,7 +237,7 @@ long open_file(char* filename)
   cur_frame->alert = NULL;
   cur_frame->line_count = lines;
   cur_frame->line_buffers = malloc(lines * sizeof(struct line_buffer));
-  for (long i = 0; i < lines; i++)
+  for (size_t i = 0; i < lines; i++)
     {
       struct line_buffer* lbuf = cur_frame->line_buffers + i;
       lbuf->used = 0;
@@ -249,7 +249,7 @@ long open_file(char* filename)
     {
       /* Populate lines */
       long bufptr = 0;
-      for (long i = 0; i < lines; i++)
+      for (size_t i = 0; i < lines; i++)
 	{
 	  /* Get the span of the line */
 	  long start = bufptr;
