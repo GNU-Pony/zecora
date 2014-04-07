@@ -291,7 +291,7 @@ long open_file(char* filename)
 		  if (k < 0)
 		    k = 0;
 		  *(lbuf->line + k) <<= 6;
-		  *(lbuf->line + k) |= c & 0x4F;
+		  *(lbuf->line + k) |= c & 0x3F;
 		}
 	    }
 	  

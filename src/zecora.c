@@ -58,7 +58,8 @@ int main(int argc, char** argv)
       /* Check the size of the terminal */
       if ((rows < MINIMUM_ROWS) || (cols < MINIMUM_COLS))
 	{
-	  fprintf(stderr, "You will need at least a %i rows by %i columns terminal!\n", MINIMUM_ROWS, MINIMUM_COLS);
+	  fprintf(stderr, "You will need at least a %i rows by %i columns terminal!\n",
+		  MINIMUM_ROWS, MINIMUM_COLS);
 	  return 1;
 	}
 #ifdef DEBUG
@@ -80,7 +81,7 @@ int main(int argc, char** argv)
   pid = xfork();
   if (pid && (pid != (pid_t)-1))
     {
-      /* Parent should waid for fork to ensure that the terminal is properly restored */
+      /* Parent should wait for the fork to ensure that the terminal is properly restored */
       (void)waitpid(pid, &status, WUNTRACED);
     }
   else
@@ -199,7 +200,7 @@ static void create_screen(pos_t rows, pos_t cols)
   char* filename;
   
   /* Create a line of spaces as large as the screen */
-  spaces = alloca((size_t)(cols + 1) * sizeof(char));
+  spaces = malloc((size_t)(cols + 1) * sizeof(char));
   for (i = 0; i < cols; i++)
     *(spaces + i) = ' ';
   *(spaces + cols) = 0;
@@ -298,13 +299,15 @@ static void create_screen(pos_t rows, pos_t cols)
 	    {
 	      long off = 7;
 	      *ucs_decode_buffer = (int8_t)0x80;
+	      if (c < 0)
+		abort();
 	      while (c)
 		{
-		  *(ucs_decode_buffer + --off) = (c & 0x4F) | 0x80;
+		  *(ucs_decode_buffer + --off) = (c & 0x3F) | 0x80;
 		  *ucs_decode_buffer |= (*ucs_decode_buffer) >> 1;
 		  c >>= 6;
 		}
-	      if ((*ucs_decode_buffer) & *(ucs_decode_buffer + off))
+	      if ((*ucs_decode_buffer) & (*(ucs_decode_buffer + off) & 0x3F))
 		*(ucs_decode_buffer + --off) = (*ucs_decode_buffer) << 1;
 	      else
 		*(ucs_decode_buffer + off) |= (*ucs_decode_buffer) << 1;
@@ -320,6 +323,8 @@ static void create_screen(pos_t rows, pos_t cols)
   
   /* Flush the screen */
   fflush(stdout);
+  
+  free(spaces);
 }
 
 
