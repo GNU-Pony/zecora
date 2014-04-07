@@ -22,17 +22,17 @@
 /**
  * The number of opened frames
  */
-static size_t open_frames = 0;
+static pos_t open_frames = 0;
 
 /**
  * The number of frames that fits in `frames`
  */
-static size_t prepared_frames = 0;
+static pos_t prepared_frames = 0;
 
 /**
  * The index of the current frame
  */
-static ssize_t current_frame = -1;
+static pos_t current_frame = -1;
 
 /**
  * The opened frames
@@ -54,12 +54,12 @@ void prepare_frame_buffer(void)
   if (frames == NULL)
   {
     /* Prepare to hold 4 frames initially */
-    frames = malloc((prepared_frames = 4) * sizeof(struct frame));
+    frames = malloc((size_t)(prepared_frames = 4) * sizeof(struct frame));
   }
   else if (open_frames == prepared_frames)
   {
     /* When full, prepare to hold twice as much */
-    frames = realloc(frames, (prepared_frames <<= 1) * sizeof(struct frame));
+    frames = realloc(frames, (size_t)(prepared_frames <<= 1) * sizeof(struct frame));
     /* Revalidate the value of `cur_frame` as it would have been incorrect if `realloc` moves `frames` */
     cur_frame = frames + current_frame;
   }
@@ -75,7 +75,7 @@ void create_scratch(void)
   prepare_frame_buffer();
   
   /* Create new frame */
-  current_frame = (ssize_t)(open_frames++);
+  current_frame = open_frames++;
   cur_frame = frames + current_frame;
   
   /* Initialise frame */
@@ -120,7 +120,7 @@ void create_scratch(void)
 long open_file(char* filename)
 {
   /* Return the ~index of the frame holding the file if it already exists */
-  long found = find_file(filename);
+  pos_t found = find_file(filename);
   if (found >= 0)
     return ~found;
   
@@ -169,7 +169,7 @@ long open_file(char* filename)
     {
       for (;;)
 	{
-	  unsigned long read_block = reported_size - size;
+	  size_t read_block = reported_size - size;
 	  read_block = block_size < read_block ? block_size : read_block;
 	  if (read_block == 0)
 	    break;
@@ -195,7 +195,7 @@ long open_file(char* filename)
     }
   
   /* Count the number of lines */
-  size_t lines = 1;
+  pos_t lines = 1;
   if (buffer)
     for (size_t i = 0; i < size; i++)
       if (*(buffer + i) == '\n')
@@ -224,7 +224,7 @@ long open_file(char* filename)
   prepare_frame_buffer();
   
   /* Create new frame */
-  current_frame = (ssize_t)(open_frames++);
+  current_frame = open_frames++;
   cur_frame = frames + current_frame;
   cur_frame->row = 0;
   cur_frame->column = 0;
@@ -235,9 +235,9 @@ long open_file(char* filename)
   cur_frame->flags = 0;
   cur_frame->file = _filename;
   cur_frame->alert = NULL;
-  cur_frame->line_count = (ssize_t)lines;
+  cur_frame->line_count = lines;
   cur_frame->line_buffers = malloc(lines * sizeof(struct line_buffer));
-  for (size_t i = 0; i < lines; i++)
+  for (pos_t i = 0; i < lines; i++)
     {
       struct line_buffer* lbuf = cur_frame->line_buffers + i;
       lbuf->used = 0;
@@ -248,19 +248,19 @@ long open_file(char* filename)
   if (buffer)
     {
       /* Populate lines */
-      size_t bufptr = 0;
-      for (size_t i = 0; i < lines; i++)
+      pos_t bufptr = 0;
+      for (pos_t i = 0; i < lines; i++)
 	{
 	  /* Get the span of the line */
-	  size_t start = bufptr;
-	  size_t chars = 0;
-	  while ((unsigned long)bufptr < size)
+	  pos_t start = bufptr;
+	  pos_t chars = 0;
+	  while (bufptr < size)
 	    if (*(buffer + bufptr) == '\n')
 	      break;
 	    else
 	      if ((*(buffer + bufptr++) & 0xC0) != 0x80)
 		chars++;
-	  ssize_t linesize = (ssize_t)(bufptr - start);
+	  pos_t linesize = (pos_t)(bufptr - start);
 	  bufptr = start;
 	  
 	  /* Create line buffer and fill it with metadata */
@@ -273,7 +273,7 @@ long open_file(char* filename)
 	    }
 	  
 	  /* Fill the line with the data */
-	  for (ssize_t j = 0, k = -1; j < linesize; j++)
+	  for (pos_t j = 0, k = -1; j < linesize; j++)
 	    {
 	      int8_t c = *(buffer + bufptr++);
 	      if ((c & 0xC0) != 0x80)
@@ -317,11 +317,11 @@ long open_file(char* filename)
  * @return  >=0       The index of the frame
  * @return  -1        No frame contains the file
  */
-ssize_t find_file(char* filename)
+pos_t find_file(char* filename)
 {
   char* f;
   char* ff;
-  for (size_t i = 0; i < open_frames; i++)
+  for (pos_t i = 0; i < open_frames; i++)
     if ((ff = (frames + i)->file))
       {
 	/* Check of the frames file matches the wanted file */
@@ -334,7 +334,7 @@ ssize_t find_file(char* filename)
 	
 	/* Report index of frame if it was match */
 	if ((*ff | *f) == 0)
-	  return (ssize_t)i;
+	  return (pos_t)i;
       }
   
   /* No frame contains the file */
@@ -361,7 +361,7 @@ void alert(char* message)
  * @param  row  The line to jump to, negative to keep the current
  * @parma  col  The column to jump to, negative to keep the current position if row is unchanged and beginning otherwise
  */
-void apply_jump(long row, long col)
+void apply_jump(pos_t row, pos_t col)
 {
   if (row >= 0)
     {
@@ -379,8 +379,7 @@ void apply_jump(long row, long col)
  */
 void free_frames(void)
 {
-  size_t i;
-  pos_t j, n;
+  pos_t i, j, n;
   char* buf;
   
 #define _p_(object)  ((long)(void*)(object))

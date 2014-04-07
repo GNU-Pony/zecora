@@ -36,7 +36,7 @@ extern struct frame* cur_frame;
 int main(int argc, char** argv)
 {
   struct winsize win;
-  size_t rows, cols;
+  pos_t rows, cols;
   struct termios saved_stty;
   struct termios stty;
   bool_t file_loaded;
@@ -52,8 +52,8 @@ int main(int argc, char** argv)
 #endif
       /* Determine the size of the terminal */
       ioctl(STDOUT_FILENO, TIOCGWINSZ, (char*)&win);
-      rows = (size_t)(win.ws_row);
-      cols = (size_t)(win.ws_col);
+      rows = (pos_t)(win.ws_row);
+      cols = (pos_t)(win.ws_col);
       
       /* Check the size of the terminal */
       if ((rows < MINIMUM_ROWS) || (cols < MINIMUM_COLS))
@@ -192,10 +192,10 @@ static void jump(char* command)
 }
 
 
-static void create_screen(size_t rows, size_t cols)
+static void create_screen(pos_t rows, pos_t cols)
 {
   char* spaces;
-  size_t i;
+  pos_t i;
   char* filename;
   
   /* Create a line of spaces as large as the screen */
@@ -207,7 +207,7 @@ static void create_screen(size_t rows, size_t cols)
   /* Ensure that the point is visible */
   pos_t point_row = cur_frame->row;
   pos_t point_col = cur_frame->column;
-  size_t point_cols = cur_frame->line_buffers[point_row].used;
+  pos_t point_cols = cur_frame->line_buffers[point_row].used;
   if (point_col > (pos_t)point_cols)
     point_col = (pos_t)point_cols;
   if (point_row < cur_frame->first_row)
@@ -249,8 +249,8 @@ static void create_screen(size_t rows, size_t cols)
   printf("\033[00m\033[2;1H");
   
   /* Fill the screen */
-  size_t r = cur_frame->row;
-  size_t n = cur_frame->line_count, m = cur_frame->first_row + rows - 3;
+  pos_t r = cur_frame->row;
+  pos_t n = cur_frame->line_count, m = cur_frame->first_row + rows - 3;
   struct line_buffer* lines = cur_frame->line_buffers;
   n = n < m ? n : m;
   cols--;
@@ -259,12 +259,12 @@ static void create_screen(size_t rows, size_t cols)
   for (i = cur_frame->first_row; i < n; i++)
     {
       m = (lines + i)->used;
-      size_t j = i == r ? cur_frame->first_column : 0;
+      pos_t j = i == r ? cur_frame->first_column : 0;
       m = m < (cols + j) ? m : (cols + j);
       char_t* line = (lines + i)->line;
       /* TODO add support for combining diacriticals */
       /* TODO colour comment lines */
-      long col = 0;
+      pos_t col = 0;
       for (; (j < m) && (col < cols); j++)
 	{
 	  char_t c = *(line + j);
@@ -323,7 +323,7 @@ static void create_screen(size_t rows, size_t cols)
 }
 
 
-static void read_input(size_t cols)
+static void read_input(pos_t cols)
 {
   getchar();
 }

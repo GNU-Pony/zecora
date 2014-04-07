@@ -56,12 +56,12 @@ struct line_buffer
   /**
    * The number of used characters in the line
    */
-  size_t used;
+  pos_t used;
   
   /**
    * The number of allocated characters for the line
    */
-  size_t allocated;
+  pos_t allocated;
   
   /**
    * The content of the line
@@ -176,7 +176,7 @@ long open_file(char* filename);
  * @return  >=0       The index of the frame
  * @return  -1        No frame contains the file
  */
-ssize_t find_file(char* filename);
+pos_t find_file(char* filename);
 
 
 /**
@@ -193,7 +193,7 @@ void alert(char* message);
  * @param  row  The line to jump to, negative to keep the current
  * @parma  col  The column to jump to, negative to keep the current position if row is unchanged and beginning otherwise
  */
-void apply_jump(long row, long col);
+void apply_jump(pos_t row, pos_t col);
 
 
 /**

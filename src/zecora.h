@@ -57,8 +57,8 @@
 
 
 static void jump(char* command);
-static void create_screen(size_t rows, size_t cols);
-static void read_input(size_t cols);
+static void create_screen(pos_t rows, pos_t cols);
+static void read_input(pos_t cols);
 
 
 #endif
