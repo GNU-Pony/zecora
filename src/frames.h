@@ -140,12 +140,10 @@ typedef struct frame
  */
 void prepare_frame_buffer(void);
 
-
 /**
  * Create an empty document that is not yet associated with a file
  */
 void create_scratch(void);
-
 
 /**
  * Opens a new file
@@ -168,7 +166,6 @@ void create_scratch(void);
  */
 long open_file(char* filename);
 
-
 /**
  * Find the frame that contains a specific file
  * 
@@ -178,14 +175,12 @@ long open_file(char* filename);
  */
 pos_t find_file(char* filename) __attribute__((pure));
 
-
 /**
  * Adds an alert to the current frame
  * 
  * @param  message  The message
  */
 void alert(char* message);
-
 
 /**
  * Makes a jump in the current frame
@@ -194,7 +189,6 @@ void alert(char* message);
  * @parma  col  The column to jump to, negative to keep the current position if row is unchanged and beginning otherwise
  */
 void apply_jump(pos_t row, pos_t col);
-
 
 /**
  * Free all frame resources
