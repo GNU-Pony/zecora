@@ -51,7 +51,7 @@
 /**
  * Frame line buffer information structure
  */
-struct line_buffer
+typedef struct line_buffer
 {
   /**
    * The number of used characters in the line
@@ -68,13 +68,13 @@ struct line_buffer
    */
   char_t* line;
   
-} line_buffer;
+} line_buffer_t;
 
 
 /**
  * Frame information structure
  */
-struct frame
+typedef struct frame
 {
   /**
    * The current row of the point in the frame
@@ -129,9 +129,9 @@ struct frame
   /**
    * The line buffes in the frame
    */
-  struct line_buffer* line_buffers;
+  line_buffer_t* line_buffers;
   
-} frame;
+} frame_t;
 
 
 
@@ -176,7 +176,7 @@ long open_file(char* filename);
  * @return  >=0       The index of the frame
  * @return  -1        No frame contains the file
  */
-pos_t find_file(char* filename);
+pos_t find_file(char* filename) __attribute__((pure));
 
 
 /**

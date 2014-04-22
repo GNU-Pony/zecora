@@ -37,12 +37,12 @@ static pos_t current_frame = -1;
 /**
  * The opened frames
  */
-static struct frame* frames = NULL;
+static frame_t* frames = NULL;
 
 /**
  * The currently active frame
  */
-struct frame* cur_frame = NULL;
+frame_t* cur_frame = NULL;
 
 
 
@@ -54,12 +54,12 @@ void prepare_frame_buffer(void)
   if (frames == NULL)
   {
     /* Prepare to hold 4 frames initially */
-    frames = malloc((size_t)(prepared_frames = 4) * sizeof(struct frame));
+    frames = malloc((size_t)(prepared_frames = 4) * sizeof(frame_t));
   }
   else if (open_frames == prepared_frames)
   {
     /* When full, prepare to hold twice as much */
-    frames = realloc(frames, (size_t)(prepared_frames <<= 1) * sizeof(struct frame));
+    frames = realloc(frames, (size_t)(prepared_frames <<= 1) * sizeof(frame_t));
     /* Revalidate the value of `cur_frame` as it would have been incorrect if `realloc` moves `frames` */
     cur_frame = frames + current_frame;
   }
@@ -89,7 +89,7 @@ void create_scratch(void)
   cur_frame->file = NULL;
   cur_frame->alert = NULL;
   cur_frame->line_count = 1;
-  cur_frame->line_buffers = malloc(sizeof(struct line_buffer));
+  cur_frame->line_buffers = malloc(sizeof(line_buffer_t));
   
   /* Create one empty line */
   cur_frame->line_buffers->used = 0;
@@ -236,10 +236,10 @@ long open_file(char* filename)
   cur_frame->file = _filename;
   cur_frame->alert = NULL;
   cur_frame->line_count = lines;
-  cur_frame->line_buffers = malloc((size_t)lines * sizeof(struct line_buffer));
-  for (pos_t i = 0; i < lines; i++)
+  cur_frame->line_buffers = malloc((size_t)lines * sizeof(line_buffer_t));
+  for (upos_t i = 0; i < (upos_t)lines; i++)
     {
-      struct line_buffer* lbuf = cur_frame->line_buffers + i;
+      line_buffer_t* lbuf = cur_frame->line_buffers + i;
       lbuf->used = 0;
       lbuf->allocated = 4;
       lbuf->line = malloc(4 * sizeof(char_t));
@@ -249,7 +249,7 @@ long open_file(char* filename)
     {
       /* Populate lines */
       size_t bufptr = 0;
-      for (pos_t i = 0; i < lines; i++)
+      for (upos_t i = 0; i < (upos_t)lines; i++)
 	{
 	  /* Get the span of the line */
 	  size_t start = bufptr;
@@ -264,7 +264,7 @@ long open_file(char* filename)
 	  bufptr = start;
 	  
 	  /* Create line buffer and fill it with metadata */
-	  struct line_buffer* lbuf = cur_frame->line_buffers + i;
+	  line_buffer_t* lbuf = cur_frame->line_buffers + i;
 	  lbuf->used = chars;
 	  if (lbuf->allocated < lbuf->used)
 	    {
@@ -282,7 +282,7 @@ long open_file(char* filename)
 		  while (c & 0x80)
 		    {
 		      n++;
-		      c <<= 1;
+		      c = (int8_t)(c << 1);
 		    }
 		  *(lbuf->line + ++k) = c >> n;
 		}

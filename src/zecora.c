@@ -22,7 +22,7 @@
 /**
  * The currently active frame
  */
-extern struct frame* cur_frame;
+extern frame_t* cur_frame;
 
 
 
@@ -143,13 +143,13 @@ int main(int argc, char** argv)
  * 
  * @param  command  The jump command, in the format `[%row][:%column]`
  */
-static void jump(char* command)
+static void jump(const char* command)
 {
   byte_t has = 0, state = 1;
   pos_t row = 0, col = 0;
   char c;
   char* msg;
-  char* msg_;
+  const char* msg_;
   
   /* Parse command */
   while ((c = *command++))
@@ -252,7 +252,7 @@ static void create_screen(pos_t rows, pos_t cols)
   /* Fill the screen */
   pos_t r = cur_frame->row;
   pos_t n = cur_frame->line_count, m = cur_frame->first_row + rows - 3;
-  struct line_buffer* lines = cur_frame->line_buffers;
+  line_buffer_t* lines = cur_frame->line_buffers;
   n = n < m ? n : m;
   cols--;
   static char ucs_decode_buffer[8];
@@ -264,8 +264,8 @@ static void create_screen(pos_t rows, pos_t cols)
       m = m < (cols + j) ? m : (cols + j);
       char_t* line = (lines + i)->line;
       /* TODO add support for combining diacriticals */
-      /* TODO colour comment lines */
       pos_t col = 0;
+      int is_comment = 0;
       for (; (j < m) && (col < cols); j++)
 	{
 	  char_t c = *(line + j);
@@ -282,19 +282,26 @@ static void create_screen(pos_t rows, pos_t cols)
 	    }
 	  col++;
 	  if ((c & 0x7FFFFFFF) != c) /* should never happend: invalid ucs value */
-	    printf("\033[41m.\033[00m");
+	    printf(is_comment ? "\033[41m.\033[00;31m" : "\033[41m.\033[00m");
 	  else if ((0 <= c) && (c < (char_t)' '))
-	    printf("\033[31m%c\033[00m", '@' + c);
+	    printf(is_comment ? "\033[01m%c\033[21m" : "\033[31m%c\033[00m", '@' + c);
 	  else if (c == 0x2011) /* non-breaking hyphen */
-	    printf("\033[35m-\033[00m");
+	    printf(is_comment ? "\033[35m-\033[00m" : "\033[35m-\033[00m");
 	  else if (c == 0x2010) /* hyphen */
-	    printf("\033[34m-\033[00m");
+	    printf(is_comment ? "\033[34m-\033[00m" : "\033[34m-\033[00m");
 	  else if (c == 0x00A0) /* no-breaking space */
-	    printf("\033[45m \033[00m");
+	    printf(is_comment ? "\033[45m \033[00;31m" : "\033[45m \033[00m");
 	  else if (c == 0x00AD) /* soft hyphen */
-	    printf("\033[31m-\033[00m");
+	    printf(is_comment ? "\033[01m-\033[21m" : "\033[31m-\033[00m");
 	  else if (c < 0x80)
-	    printf("%c", c);
+	    {
+	      if (c == '#')
+		{
+		  is_comment = 1;
+		  printf("\033[31m");
+		}
+	      printf("%c", c);
+	    }
 	  else
 	    {
 	      long off = 7;
@@ -303,14 +310,14 @@ static void create_screen(pos_t rows, pos_t cols)
 		abort();
 	      while (c)
 		{
-		  *(ucs_decode_buffer + --off) = (c & 0x3F) | 0x80;
+		  *(ucs_decode_buffer + --off) = (char)((c & 0x3F) | 0x80);
 		  *ucs_decode_buffer |= (*ucs_decode_buffer) >> 1;
 		  c >>= 6;
 		}
 	      if ((*ucs_decode_buffer) & (*(ucs_decode_buffer + off) & 0x3F))
-		*(ucs_decode_buffer + --off) = (*ucs_decode_buffer) << 1;
+		*(ucs_decode_buffer + --off) = (char)((*ucs_decode_buffer) << 1);
 	      else
-		*(ucs_decode_buffer + off) |= (*ucs_decode_buffer) << 1;
+		*(ucs_decode_buffer + off) |= (char)((*ucs_decode_buffer) << 1);
 	      printf("%s", ucs_decode_buffer + off);
 	    }
 	}

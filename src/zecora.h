@@ -56,8 +56,15 @@
 #endif
 
 
-static void jump(char* command);
+/**
+ * Make a jump in the current frame
+ * 
+ * @param  command  The jump command, in the format `[%row][:%column]`
+ */
+static void jump(const char* command);
+
 static void create_screen(pos_t rows, pos_t cols);
+
 static void read_input(pos_t cols);
 
 
