@@ -337,6 +337,241 @@ static void create_screen(pos_t rows, pos_t cols)
 
 static void read_input(pos_t cols)
 {
-  getchar();
+#define CRTL(KEY)  (KEY - '@')
+  
+  int ctrl_x = 0;
+  int meta = 0;
+  
+  for (;;)
+    {
+      int c = getchar();
+      if (c == '\033')
+	{
+	  meta += 1;
+	  if (meta == 3)
+	    {
+	      meta = 0;
+	      /* help */
+	    }
+	}
+      else if (meta)
+	{
+	  if (ctrl_x == 0)
+	    switch (c)
+	      {
+	      case 'g':
+		/* jump */
+		break;
+		
+	      case 'i':
+		/* tab */
+		break;
+		
+	      case 'l':
+		/* lower case */
+		break;
+		
+	      case 'u':
+		/* upper case */
+		break;
+		
+	      case 'v':
+		/* page up */
+		break;
+		
+	      case 'w':
+		/* copy */
+		break;
+		
+	      case 'y':
+		/* cycle paste */
+		break;
+		
+	      case '[':
+		/* escape sequence... */
+		break;
+		
+	      default:
+		/* not recognised */
+		break;
+	      }
+	  ctrl_x = 0;
+	  meta = 0;
+	}
+      else if (ctrl_x == 0)
+	{
+	  switch (c)
+	    {
+	    case CTRL('@'):
+	      /* set mark */
+	      break;
+	      
+	    case CTRL('A'):
+	      /* home */
+	      break;
+	      
+	    case CTRL('B'):
+	      /* backwards */
+	      break;
+	      
+	    case CTRL('D'):
+	      /* delete */
+	      break;
+	      
+	    case CTRL('E'):
+	      /* end */
+	      break;
+	      
+	    case CTRL('F'):
+	      /* forward */
+	      break;
+	      
+	    case CTRL('G'):
+	      /* quit action */
+	      break;
+	    
+	    case CTRL('K'):
+	      /* kill */
+	      break;
+	      
+	    case CTRL('L'):
+	      /* recenter */
+	      break;
+	      
+	    case CTRL('M'):
+	      /* new line */
+	      break;
+	      
+	    case CTRL('N'):
+	      /* next line */
+	      break;
+	      
+	    case CTRL('O'):
+	      /* insert new line */
+	      break;
+	      
+	    case CTRL('P'):
+	      /* previous line */
+	      break;
+	      
+	    case CTRL('Q'):
+	      /* verbatim input */
+	      break;
+	    
+	    case CTRL('R'):
+	      /* search backwards */
+	      break;
+	      
+	    case CTRL('S'):
+	      /* search */
+	      break;
+	      
+	    case CTRL('T'):
+	      /* transpose */
+	      break;
+	      
+	    case CTRL('V'):
+	      /* page down */
+	      break;
+	      
+	    case CTRL('W'):
+	      /* cut */
+	      break;
+	      
+	    case CTRL('X'):
+	      ctrl_x = 1;
+	      break;
+	      
+	    case CTRL('Y'):
+	      /* paste */
+	      break;
+	      
+	    case CTRL('_'):
+	      /* undo */
+	      break;
+	      
+	    case '\t':
+	      /* tab */
+	      break;
+	      
+	    case '\n':
+	      /* new line */
+	      break;
+	      
+	    case 127:
+	    case CTRL('H'):
+	      /* erase */
+	      break;
+	      
+	    default:
+	      /* charcter? */
+	      break;
+	    }
+	}
+      else
+	{
+	  switch (c)
+	    {
+	    case CTRL('C'):
+	      /* exit */
+	      return;
+	      
+	    case CTRL('F'):
+	      /* find file */
+	      break;
+	      
+	    case CTRL('I'):
+	      /* indent */
+	      break;
+	      
+	    case CTRL('K'):
+	      /* kill buffer */
+	      break;
+	      
+	    case CTRL('Q'):
+	      /* toggle read-only mode */
+	      break;
+	      
+	    case CTRL('R'):
+	      /* find file, read-only */
+	      break;
+	      
+	    case CTRL('S'):
+	      /* save */
+	      break;
+	      
+	    case CTRL('W'):
+	      /* save as */
+	      break;
+	      
+	    case CTRL('X'):
+	      /* swap mark */
+	      break;
+	      
+	    case CTRL('_'):
+	      /* switch undo direction */
+	      break;
+	      
+	    case 'k':
+	      /* kill buffer */
+	      break;
+	      
+	    case 'o':
+	      /* next buffer */
+	      break;
+	      
+	    case 's':
+	      /* save all, ask */
+	      break;
+	      
+	    default:
+	      /* not recognised */
+	      break;
+	    }
+	  ctrl_x = 0;
+	}
+    }
+  
+#undef CRTL
 }
 
