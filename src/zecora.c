@@ -341,11 +341,73 @@ static void read_input(pos_t cols)
   
   int ctrl_x = 0;
   int meta = 0;
+  ssize_t escape = -1;
+  char escape_buffer[16];
   
   for (;;)
     {
       int c = getchar();
-      if (c == '\033')
+      if (escape >= 0)
+	{
+	  if (escape == sizeof(escape_buffer) / sizeof(char))
+	    /* Too long, stop. */
+	    escape = -1;
+	  else
+	    {
+	      if ((('0' <= c) && (c <= '9')) || (c == ';'))
+		escape_buffer[escape++] = c;
+	      else
+		{
+		  switch (c)
+		    {
+		    case 'A':
+		      /* up */
+		      break;
+		      
+		    case 'B':
+		      /* down */
+		      break;
+		      
+		    case 'C':
+		      /* right */
+		      break;
+		      
+		    case 'D':
+		      /* left */
+		      break;
+		      
+		    case '~':
+		      /* ... */
+		      break;
+		      
+		    default:
+		      /* not recognised */
+		      break;
+		    }
+		  escape = -1;
+		}
+	      continue;
+	    }
+	}
+      if (escape == -2) /* ESC O */
+	{
+	  switch (c)
+	    {
+	    case 'H':
+	      /* home */
+	      break;
+	      
+	    case 'F':
+	      /* end */
+	      break;
+	      
+	    default:
+	      /* not recognised */
+	      break;
+	    }
+	  escape = -1;
+	}
+      else if (c == '\033')
 	{
 	  meta += 1;
 	  if (meta == 3)
@@ -359,6 +421,10 @@ static void read_input(pos_t cols)
 	  if (ctrl_x == 0)
 	    switch (c)
 	      {
+	      case 'O':
+		escape = -2;
+		break;
+		
 	      case 'g':
 		/* jump */
 		break;
@@ -388,7 +454,7 @@ static void read_input(pos_t cols)
 		break;
 		
 	      case '[':
-		/* escape sequence... */
+		escape = 0;
 		break;
 		
 	      default:
